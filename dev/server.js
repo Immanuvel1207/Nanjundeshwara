@@ -3,25 +3,28 @@ const mongoose = require("mongoose")
 const bodyParser = require("body-parser")
 const cors = require("cors")
 require("dotenv").config()
+const languageMiddleware = require("./middleware/language")
 
 const app = express()
 const PORT = 4000
 
 app.use(
   cors({
-    origin: "*", 
-    methods: ["GET", "POST", "DELETE"], 
+    origin: "*", // Allow all origins (for testing purposes)
+    methods: ["GET", "POST", "DELETE"], // Allow GET, POST and DELETE requests
   }),
 )
 app.use(bodyParser.json())
+app.use(languageMiddleware) // Add language middleware
 
-
+// Define schemas first
 const userSchema = new mongoose.Schema({
   _id: Number,
   c_name: String,
   c_vill: String,
   c_category: String,
   phone: String,
+  language: { type: String, default: "en" }, // Add language preference to user schema
 })
 
 const paymentSchema = new mongoose.Schema({
@@ -59,18 +62,19 @@ const Village = mongoose.model("Village", villageSchema)
 const Notification = mongoose.model("Notification", notificationSchema)
 const Transaction = mongoose.model("Transaction", transactionSchema)
 
+// Define all route handlers
 app.post("/register_device", async (req, res) => {
   const { userId, deviceToken } = req.body
   try {
     const user = await User.findById(userId)
     if (!user) {
-      return res.status(404).json({ error: "User not found" })
+      return res.status(404).json({ error: res.locals.t("userNotFound") })
     }
 
     user.deviceToken = deviceToken
     await user.save()
 
-    res.json({ message: "Device registered successfully" })
+    res.json({ message: res.locals.t("deviceRegistered") })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -90,11 +94,11 @@ async function checkAndCreateVillage(req, res, next) {
 }
 
 app.post("/add_user", checkAndCreateVillage, async (req, res) => {
-  const { userId, c_name, c_vill, c_category, phone } = req.body
+  const { userId, c_name, c_vill, c_category, phone, language = "en" } = req.body
   try {
     const existingUser = await User.findById(userId)
     if (existingUser) {
-      return res.status(400).json({ error: "User ID already exists" })
+      return res.status(400).json({ error: res.locals.t("userIdExists") })
     }
     const user = new User({
       _id: userId,
@@ -102,16 +106,23 @@ app.post("/add_user", checkAndCreateVillage, async (req, res) => {
       c_vill,
       c_category,
       phone,
+      language,
     })
     await user.save()
 
+    // Get user's language preference for notification
+    const userLang = language || req.lang
+
+    const { translate } = require("./i18n/i18n")
+    const welcomeMessage = translate("welcomeMessage", userLang, { name: c_name })
+
     const notification = new Notification({
       userId: userId,
-      message: `Welcome ${c_name}! Your account has been created successfully.`,
+      message: welcomeMessage,
     })
     await notification.save()
 
-    res.json({ message: "User added successfully", data: user })
+    res.json({ message: res.locals.t("userAdded"), data: user })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -131,7 +142,7 @@ app.post("/add_payments", async (req, res) => {
   try {
     const user = await User.findById(c_id)
     if (!user) {
-      return res.status(404).json({ error: "User not found" })
+      return res.status(404).json({ error: res.locals.t("userNotFound") })
     }
     const payment = new Payment({
       c_id,
@@ -141,7 +152,11 @@ app.post("/add_payments", async (req, res) => {
     })
     await payment.save()
 
-    const notificationMessage = `Your payment of ${amount} for ${p_month} has been recorded.`
+    // Get user's language preference for notification
+    const userLang = user.language || "en"
+
+    const { translate } = require("./i18n/i18n")
+    const notificationMessage = translate("paymentRecorded", userLang, { amount, month: p_month })
 
     // Create in-app notification
     const notification = new Notification({
@@ -150,7 +165,7 @@ app.post("/add_payments", async (req, res) => {
     })
     await notification.save()
 
-    res.json({ message: "Payment added successfully", data: payment })
+    res.json({ message: res.locals.t("paymentAdded"), data: payment })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -177,7 +192,7 @@ app.get("/find_user", async (req, res) => {
     if (user) {
       res.json(user)
     } else {
-      res.status(404).json({ error: "User not found" })
+      res.status(404).json({ error: res.locals.t("userNotFound") })
     }
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -224,7 +239,7 @@ app.get("/find_payments", async (req, res) => {
 app.get("/view_payments_by_month", async (req, res) => {
   const month = req.query.p_month
   try {
-
+    // Get all users
     const allUsers = await User.find().sort({ _id: 1 })
 
     // Get all payments for the specified month
@@ -421,7 +436,7 @@ app.delete("/delete_user/:userId", async (req, res) => {
     // First check if the user exists
     const user = await User.findById(userId)
     if (!user) {
-      return res.status(404).json({ error: "User not found" })
+      return res.status(404).json({ error: res.locals.t("userNotFound") })
     }
 
     // Delete the user
@@ -432,7 +447,7 @@ app.delete("/delete_user/:userId", async (req, res) => {
     await Notification.deleteMany({ userId: userId })
     await Transaction.deleteMany({ userId: userId })
 
-    res.json({ message: `User with ID ${userId} and their related data were deleted successfully` })
+    res.json({ message: res.locals.t("userDeleted", { userId }) })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -447,9 +462,9 @@ app.post("/login", async (req, res) => {
 
     const user = await User.findOne({ _id: username, phone: password })
     if (user) {
-      res.json({ success: true, isAdmin: false, userId: user._id })
+      res.json({ success: true, isAdmin: false, userId: user._id, language: user.language || "en" })
     } else {
-      res.status(401).json({ error: "Invalid credentials" })
+      res.status(401).json({ error: res.locals.t("invalidCredentials") })
     }
   } catch (error) {
     res.status(500).json({ error: error.message })
@@ -502,10 +517,19 @@ app.get("/check_payment_status", async (req, res) => {
 app.post("/request_payment", async (req, res) => {
   const { userId, month, amount, transactionId } = req.body
   try {
+    // Get user for language preference
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ error: res.locals.t("userNotFound") })
+    }
+
+    const userLang = user.language || "en"
+    const { translate } = require("./i18n/i18n")
+
     // Check if payment for this month already exists
     const existingPayment = await Payment.findOne({ c_id: userId, p_month: month })
     if (existingPayment) {
-      return res.status(400).json({ error: "Payment for this month already exists" })
+      return res.status(400).json({ error: res.locals.t("paymentExists") })
     }
 
     // Check if there's a pending transaction for this month
@@ -516,13 +540,13 @@ app.post("/request_payment", async (req, res) => {
     })
 
     if (pendingTransaction) {
-      return res.status(400).json({ error: "A payment request for this month is already pending approval" })
+      return res.status(400).json({ error: res.locals.t("pendingPaymentExists") })
     }
 
     // Check if transaction ID already exists
     const existingTransaction = await Transaction.findOne({ transactionId })
     if (existingTransaction) {
-      return res.status(400).json({ error: "Transaction ID already exists" })
+      return res.status(400).json({ error: res.locals.t("transactionIdExists") })
     }
 
     const transaction = new Transaction({
@@ -535,14 +559,14 @@ app.post("/request_payment", async (req, res) => {
     await transaction.save()
 
     // Create in-app notification
-    const notificationMessage = `Your payment request of ${amount} for ${month} has been submitted and is pending approval.`
+    const notificationMessage = translate("paymentRequestPending", userLang, { amount, month })
     const notification = new Notification({
       userId,
       message: notificationMessage,
     })
     await notification.save()
 
-    res.json({ message: "Payment request submitted successfully", data: transaction })
+    res.json({ message: res.locals.t("paymentRequestSubmitted"), data: transaction })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -553,7 +577,7 @@ app.post("/approve_payment", async (req, res) => {
   try {
     const transaction = await Transaction.findOne({ transactionId })
     if (!transaction) {
-      return res.status(404).json({ error: "Transaction not found" })
+      return res.status(404).json({ error: res.locals.t("transactionNotFound") })
     }
 
     transaction.status = "approved"
@@ -568,15 +592,24 @@ app.post("/approve_payment", async (req, res) => {
     })
     await payment.save()
 
+    // Get user for language preference
+    const user = await User.findById(transaction.userId)
+    const userLang = user ? user.language : "en"
+    const { translate } = require("./i18n/i18n")
+
     // Create in-app notification
-    const notificationMessage = `Your payment of ${transaction.amount} for ${transaction.month} month has been approved.`
+    const notificationMessage = translate("paymentApprovedNotification", userLang, {
+      amount: transaction.amount,
+      month: transaction.month,
+    })
+
     const notification = new Notification({
       userId: transaction.userId,
       message: notificationMessage,
     })
     await notification.save()
 
-    res.json({ message: "Payment approved successfully", data: payment })
+    res.json({ message: res.locals.t("paymentApproved"), data: payment })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -587,21 +620,65 @@ app.post("/reject_payment", async (req, res) => {
   try {
     const transaction = await Transaction.findOne({ transactionId })
     if (!transaction) {
-      return res.status(404).json({ error: "Transaction not found" })
+      return res.status(404).json({ error: res.locals.t("transactionNotFound") })
     }
 
     transaction.status = "rejected"
     await transaction.save()
 
+    // Get user for language preference
+    const user = await User.findById(transaction.userId)
+    const userLang = user ? user.language : "en"
+    const { translate } = require("./i18n/i18n")
+
     // Create in-app notification
-    const notificationMessage = `Your payment of ${transaction.amount} for ${transaction.month} month has been rejected.`
+    const notificationMessage = translate("paymentRejectedNotification", userLang, {
+      amount: transaction.amount,
+      month: transaction.month,
+    })
+
     const notification = new Notification({
       userId: transaction.userId,
       message: notificationMessage,
     })
     await notification.save()
 
-    res.json({ message: "Payment rejected successfully", data: transaction })
+    res.json({ message: res.locals.t("paymentRejected"), data: transaction })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Add endpoint to update user language preference
+app.post("/update_language", async (req, res) => {
+  const { userId, language } = req.body
+  try {
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ error: res.locals.t("userNotFound") })
+    }
+
+    user.language = language
+    await user.save()
+
+    res.json({ message: res.locals.t("languageUpdated"), data: { userId, language } })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Get available languages
+app.get("/languages", async (req, res) => {
+  try {
+    res.json({
+      languages: [
+        { code: "en", name: "English" },
+        { code: "ta", name: "Tamil" },
+        { code: "te", name: "Telugu" },
+        { code: "kn", name: "Kannada" },
+        { code: "hi", name: "Hindi" },
+      ],
+    })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -617,9 +694,9 @@ async function startServer() {
       serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     })
-    
+
     console.log("MongoDB connected")
-    
+
     // Only start the server after successful connection
     app.listen(PORT, () => {
       console.log(`Server running on port http://localhost:${PORT}`)
