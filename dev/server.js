@@ -59,7 +59,6 @@ const Village = mongoose.model("Village", villageSchema)
 const Notification = mongoose.model("Notification", notificationSchema)
 const Transaction = mongoose.model("Transaction", transactionSchema)
 
-// Define all route handlers
 app.post("/register_device", async (req, res) => {
   const { userId, deviceToken } = req.body
   try {
