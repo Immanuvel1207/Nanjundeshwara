@@ -9,13 +9,13 @@ const PORT = 4000
 
 app.use(
   cors({
-    origin: "*", // Allow all origins (for testing purposes)
-    methods: ["GET", "POST", "DELETE"], // Allow GET, POST and DELETE requests
+    origin: "*", 
+    methods: ["GET", "POST", "DELETE"], 
   }),
 )
 app.use(bodyParser.json())
 
-// Define schemas first
+
 const userSchema = new mongoose.Schema({
   _id: Number,
   c_name: String,
