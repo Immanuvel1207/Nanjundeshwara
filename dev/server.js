@@ -225,7 +225,7 @@ app.get("/find_payments", async (req, res) => {
 app.get("/view_payments_by_month", async (req, res) => {
   const month = req.query.p_month
   try {
-    // Get all users
+
     const allUsers = await User.find().sort({ _id: 1 })
 
     // Get all payments for the specified month
