@@ -282,7 +282,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const Text('View on Map'),
               ),
               const SizedBox(height: 10),
-              Text("Phone: $phoneNumber"),
+              // Replace the phone number text with this button
+              TextButton(
+                onPressed: () async {
+                  final url = 'tel:$phoneNumber';
+                  if (await canLaunch(url)) {
+                    await launch(url);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Could not launch phone app')),
+                    );
+                  }
+                },
+                child: Text(
+                  "Phone: $phoneNumber",
+                  style: TextStyle(color: Colors.blue),
+                ),
+              ),
               const SizedBox(height: 20),
               Text(serviceDescription),
               const SizedBox(height: 20),
