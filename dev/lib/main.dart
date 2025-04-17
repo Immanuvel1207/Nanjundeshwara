@@ -167,17 +167,16 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // ADDED: Debug method to check all images
+
   Future<void> _debugImages() async {
-    // Debug all product images
     for (var category in categories) {
-      print('Checking images for category: ${category['title']}');
+      // print('Checking images for category: ${category['title']}');
       for (var product in category['products']) {
         try {
           await precacheImage(AssetImage(product['image']), context);
-          print('✅ Successfully loaded: ${product['image']}');
+          // print('✅ Successfully loaded: ${product['image']}');
         } catch (e) {
-          print('❌ Failed to load: ${product['image']}, error: $e');
+          // print('❌ Failed to load: ${product['image']}, error: $e');
         }
       }
     }
@@ -273,17 +272,28 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
               ElevatedButton(
                 onPressed: () async {
-                  if (await canLaunch(mapUrl)) {
-                    await launch(mapUrl);
+                  // Get user's current location and open directions
+                  final url = 'https://www.google.com/maps/dir/?api=1&destination=Veppanapalli&destination_place_id=ChIJXYJJVzNdqDsRs5rj5C_EJN8';
+                  if (await canLaunch(url)) {
+                    await launch(url);
                   } else {
-                    throw 'Could not launch $mapUrl';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Could not open maps')),
+                    );
                   }
                 },
-                child: const Text('View on Map'),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.directions),
+                    SizedBox(width: 8),
+                    Text('Get Directions'),
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
+
               // Replace the phone number text with this button
-              TextButton(
+              TextButton.icon(
                 onPressed: () async {
                   final url = 'tel:$phoneNumber';
                   if (await canLaunch(url)) {
@@ -294,8 +304,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
                 },
-                child: Text(
-                  "Phone: $phoneNumber",
+                icon: Icon(Icons.phone, color: Colors.green),
+                label: Text(
+                  phoneNumber,
                   style: TextStyle(color: Colors.blue),
                 ),
               ),
