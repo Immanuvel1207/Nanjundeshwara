@@ -233,13 +233,11 @@ class _HomeScreenState extends State<HomeScreen> {
               Center(
                 child: Column(
                   children: [
-                    // FIXED: Added error handling for shop image
                     Image.asset(
-                      'assets/shop.jpg', 
-                      height: 150, 
+                      'assets/shop.jpg',
+                      height: 150,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        print('Error loading shop image: $error');
                         return Container(
                           height: 150,
                           width: double.infinity,
@@ -248,15 +246,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     Text(
                       shopName,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(height: 20),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -265,65 +265,104 @@ class _HomeScreenState extends State<HomeScreen> {
                   buildPersonCard('Suselamma', 'Honoured', 'assets/mother.jpg'),
                 ],
               ),
+
               const SizedBox(height: 20),
-              const Text('Address:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Text(address),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () async {
-                  // Get user's current location and open directions
-                  final url = 'https://www.google.com/maps/dir/?api=1&destination=Veppanapalli&destination_place_id=ChIJXYJJVzNdqDsRs5rj5C_EJN8';
-                  if (await canLaunch(url)) {
-                    await launch(url);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Could not open maps')),
-                    );
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.directions),
-                    SizedBox(width: 8),
-                    Text('Get Directions'),
-                  ],
-                ),
+
+              const Text('Address:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              Text(address, style: TextStyle(fontSize: 15)),
+
+              const SizedBox(height: 14),
+
+              /// SMALL BUTTONS SECTION
+              Row(
+                children: [
+                  SizedBox(
+                    height: 36,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final googleMapsUrl = 'comgooglemaps://?daddr=Veppanapalli&center=12.5683,78.2317&zoom=15';
+                        final fallbackUrl = 'https://www.google.com/maps/dir/?api=1&destination=Veppanapalli';
+                        try {
+                          if (await canLaunch(googleMapsUrl)) {
+                            await launch(googleMapsUrl);
+                          } else if (await canLaunch(fallbackUrl)) {
+                            await launch(fallbackUrl);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Could not open maps')),
+                            );
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error opening maps')),
+                          );
+                        }
+                      },
+                      icon: Icon(Icons.directions, size: 16),
+                      label: Text('Directions', style: TextStyle(fontSize: 14)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[700],
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 36,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final cleanPhone = phoneNumber.replaceAll(' ', '').replaceAll('+', '');
+                        final phoneUrl = 'tel:$cleanPhone';
+                        try {
+                          if (await canLaunch(phoneUrl)) {
+                            await launch(phoneUrl);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Cannot open dialer')),
+                            );
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
+                        }
+                      },
+                      icon: Icon(Icons.phone, size: 16),
+                      label: Text('Call', style: TextStyle(fontSize: 14)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[700],
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                ],
               ),
 
-              // Replace the phone number text with this button
-              TextButton.icon(
-                onPressed: () async {
-                  final url = 'tel:$phoneNumber';
-                  if (await canLaunch(url)) {
-                    await launch(url);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Could not launch phone app')),
-                    );
-                  }
-                },
-                icon: Icon(Icons.phone, color: Colors.green),
-                label: Text(
-                  phoneNumber,
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
               const SizedBox(height: 20),
-              Text(serviceDescription),
+
+              /// Service Description
+              Text(serviceDescription, style: TextStyle(fontSize: 15)),
               const SizedBox(height: 20),
-              const Text('Categories:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
+
+              /// Categories
+              const Text('Categories:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+
               Column(
                 children: categories.map((category) {
                   return Card(
-                    elevation: 5,
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     child: ListTile(
-                      title: Text(category['title']),
-                      subtitle: Text(category['amount']),
+                      title: Text(category['title'], style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                      subtitle: Text(category['amount'], style: TextStyle(fontSize: 14)),
                       trailing: ElevatedButton(
-                        child: const Text('View More'),
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -332,6 +371,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
+                        child: const Text('View More'),
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          textStyle: TextStyle(fontSize: 13),
+                          backgroundColor: Colors.deepPurple,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
                       ),
                     ),
                   );
