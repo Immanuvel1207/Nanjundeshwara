@@ -5,23 +5,64 @@ import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
+  
+  // Get the saved locale
+  Locale locale = await AppLocalizations.getLocale();
+  
+  runApp(MyApp(locale: locale));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  final Locale locale;
+  
+  MyApp({required this.locale});
+  
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Locale _locale = const Locale('en', '');
+  
+  @override
+  void initState() {
+    super.initState();
+    _locale = widget.locale;
+  }
+  
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      locale: _locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: SplashScreen(setLocale: setLocale),
     );
   }
 }
 
 class SplashScreen extends StatefulWidget {
+  final Function(Locale) setLocale;
+  
+  SplashScreen({required this.setLocale});
+  
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -41,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen(username: username, isAdmin: isAdmin)),
+        MaterialPageRoute(builder: (context) => HomeScreen(username: username, isAdmin: isAdmin, setLocale: widget.setLocale)),
       );
     });
   }
@@ -70,8 +111,8 @@ class _SplashScreenState extends State<SplashScreen> {
               },
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Loading...',
+            Text(
+              AppLocalizations.of(context).translate('app_name'),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -92,8 +133,9 @@ class _SplashScreenState extends State<SplashScreen> {
 class HomeScreen extends StatefulWidget {
   final String? username;
   final bool? isAdmin;
+  final Function(Locale) setLocale;
   
-  HomeScreen({this.username, this.isAdmin});
+  HomeScreen({this.username, this.isAdmin, required this.setLocale});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -107,57 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final String address = "Sri SivaSakthi Stores, Konganapalli Road, Opposite to Aishwarya Hotel, Veppanapalli 635 121";
   final String mapUrl = "https://maps.app.goo.gl/44evAN22mo1KNfTc7";
 
-  final List<Map<String, dynamic>> categories = [
-  {
-    "title": "Gold",
-    "amount": "₹500 per month",
-    "color": "blue",
-    "products": [
-      {"name": "Rice", "quantity": "25 Kg", "image": "assets/things/ricejpg.jpg"},
-      {"name": "Maida", "quantity": "1 Pack", "image": "assets/things/maida.jpg"},
-      {"name": "Oil", "quantity": "5 Liters", "image": "assets/things/oil.jpg"},
-      {"name": "Wheat Flour", "quantity": "1 Pack", "image": "assets/things/atta.jpg"},
-      {"name": "White Dhall", "quantity": "3 Kg", "image": "assets/things/whitedall.jpg"},
-      {"name": "Rice Raw", "quantity": "3 Kg", "image": "assets/things/riceraw.jpg"},
-      {"name": "Semiya", "quantity": "1 Pack", "image": "assets/things/semiya.jpg"},
-      {"name": "Payasam Mix", "quantity": "1 Pack", "image": "assets/things/payasam.jpg"},
-      {"name": "Sugar", "quantity": "1 Kg", "image": "assets/things/sugar.jpg"},
-      {"name": "Sesame Oil", "quantity": "150 grams", "image": "assets/things/sesame.jpg"},
-      {"name": "Tamarind", "quantity": "25 pieces", "image": "assets/things/tamrind.jpg"},
-      {"name": "Dry Chilli", "quantity": "25 pieces", "image": "assets/things/chilly.jpg"},
-      {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "assets/things/coriander.jpg"},
-      {"name": "Salt", "quantity": "1/2 Kg", "image": "assets/things/salt.jpg"},
-      {"name": "Jaggery", "quantity": "1/2 Kg", "image": "assets/things/jaggery.jpg"},
-      {"name": "Pattasu Box", "quantity": "1 Box", "image": "assets/things/pattasu.jpg"},
-      {"name": "Matches Box", "quantity": "1 Pack", "image": "assets/things/match.jpg"},
-      {"name": "Turmeric Powder", "quantity": "1 Pack", "image": "assets/things/tumeric.jpg"},
-      {"name": "Kumkum", "quantity": "1 Pack", "image": "assets/things/kumkumjpg.jpg"},
-      {"name": "Camphor", "quantity": "1 Pack", "image": "assets/things/camphor.jpg"}
-    ],
-  },
-  {
-    "title": "Silver",
-    "amount": "₹300 per month",
-    "color": "yellow",
-    "products": [
-      {"name": "Rice", "quantity": "5 Kg", "image": "assets/things/ricejpg.jpg"},
-      {"name": "Oil", "quantity": "5 Liters", "image": "assets/things/oil.jpg"},
-      {"name": "White Dhall", "quantity": "5 Kg", "image": "assets/things/whitedall.jpg"},
-      {"name": "Sesame Oil", "quantity": "250 grams", "image": "assets/things/sesame.jpg"},
-      {"name": "Tamarind", "quantity": "25 pieces", "image": "assets/things/tamrind.jpg"},
-      {"name": "Dry Chilli", "quantity": "25 pieces", "image": "assets/things/chilly.jpg"},
-      {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "assets/things/coriander.jpg"},
-      {"name": "Maida", "quantity": "5 Kg", "image": "assets/things/maida.jpg"},
-      {"name": "Wheat Flour", "quantity": "5 Kg", "image": "assets/things/atta.jpg"},
-      {"name": "Oil", "quantity": "1/2 Liter", "image": "assets/things/oil.jpg"},
-      {"name": "Semiya", "quantity": "1 Pack", "image": "assets/things/semiya.jpg"},
-      {"name": "Matches Box", "quantity": "1 Pack", "image": "assets/things/match.jpg"},
-      {"name": "Turmeric Powder", "quantity": "1 Pack", "image": "assets/things/tumeric.jpg"},
-      {"name": "Kumkum", "quantity": "1 Pack", "image": "assets/things/kumkumjpg.jpg"},
-      {"name": "Camphor", "quantity": "1 Pack", "image": "assets/things/camphor.jpg"}
-    ],
-  }
-];
+  late List<Map<String, dynamic>> categories;
 
   @override
   void initState() {
@@ -168,29 +160,143 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  List<Map<String, dynamic>> getLocalizedCategories(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
+    return [
+      {
+        "title": appLocalizations.translate('gold_category'),
+        "amount": "₹500 " + appLocalizations.translate('per_month'),
+        "color": "blue",
+        "products": [
+          {"name": appLocalizations.translate('rice'), "quantity": "25 Kg", "image": "assets/things/ricejpg.jpg"},
+          {"name": appLocalizations.translate('maida'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/maida.jpg"},
+          {"name": appLocalizations.translate('oil'), "quantity": "5 " + appLocalizations.translate('liters'), "image": "assets/things/oil.jpg"},
+          {"name": appLocalizations.translate('wheat_flour'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/atta.jpg"},
+          {"name": appLocalizations.translate('white_dhall'), "quantity": "3 Kg", "image": "assets/things/whitedall.jpg"},
+          {"name": appLocalizations.translate('rice_raw'), "quantity": "3 Kg", "image": "assets/things/riceraw.jpg"},
+          {"name": appLocalizations.translate('semiya'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/semiya.jpg"},
+          {"name": appLocalizations.translate('payasam_mix'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/payasam.jpg"},
+          {"name": appLocalizations.translate('sugar'), "quantity": "1 Kg", "image": "assets/things/sugar.jpg"},
+          {"name": appLocalizations.translate('sesame_oil'), "quantity": "150 " + appLocalizations.translate('grams'), "image": "assets/things/sesame.jpg"},
+          {"name": appLocalizations.translate('tamarind'), "quantity": "25 " + appLocalizations.translate('pieces'), "image": "assets/things/tamrind.jpg"},
+          {"name": appLocalizations.translate('dry_chilli'), "quantity": "25 " + appLocalizations.translate('pieces'), "image": "assets/things/chilly.jpg"},
+          {"name": appLocalizations.translate('coriander_seeds'), "quantity": "11 " + appLocalizations.translate('pieces'), "image": "assets/things/coriander.jpg"},
+          {"name": appLocalizations.translate('salt'), "quantity": "1/2 Kg", "image": "assets/things/salt.jpg"},
+          {"name": appLocalizations.translate('jaggery'), "quantity": "1/2 Kg", "image": "assets/things/jaggery.jpg"},
+          {"name": appLocalizations.translate('pattasu_box'), "quantity": "1 " + appLocalizations.translate('box'), "image": "assets/things/pattasu.jpg"},
+          {"name": appLocalizations.translate('matches_box'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/match.jpg"},
+          {"name": appLocalizations.translate('turmeric_powder'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/tumeric.jpg"},
+          {"name": appLocalizations.translate('kumkum'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/kumkumjpg.jpg"},
+          {"name": appLocalizations.translate('camphor'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/camphor.jpg"}
+        ],
+      },
+      {
+        "title": appLocalizations.translate('silver_category'),
+        "amount": "₹300 " + appLocalizations.translate('per_month'),
+        "color": "yellow",
+        "products": [
+          {"name": appLocalizations.translate('rice'), "quantity": "5 Kg", "image": "assets/things/ricejpg.jpg"},
+          {"name": appLocalizations.translate('oil'), "quantity": "5 " + appLocalizations.translate('liters'), "image": "assets/things/oil.jpg"},
+          {"name": appLocalizations.translate('white_dhall'), "quantity": "5 Kg", "image": "assets/things/whitedall.jpg"},
+          {"name": appLocalizations.translate('sesame_oil'), "quantity": "250 " + appLocalizations.translate('grams'), "image": "assets/things/sesame.jpg"},
+          {"name": appLocalizations.translate('tamarind'), "quantity": "25 " + appLocalizations.translate('pieces'), "image": "assets/things/tamrind.jpg"},
+          {"name": appLocalizations.translate('dry_chilli'), "quantity": "25 " + appLocalizations.translate('pieces'), "image": "assets/things/chilly.jpg"},
+          {"name": appLocalizations.translate('coriander_seeds'), "quantity": "11 " + appLocalizations.translate('pieces'), "image": "assets/things/coriander.jpg"},
+          {"name": appLocalizations.translate('maida'), "quantity": "5 Kg", "image": "assets/things/maida.jpg"},
+          {"name": appLocalizations.translate('wheat_flour'), "quantity": "5 Kg", "image": "assets/things/atta.jpg"},
+          {"name": appLocalizations.translate('oil'), "quantity": "1/2 " + appLocalizations.translate('liter'), "image": "assets/things/oil.jpg"},
+          {"name": appLocalizations.translate('semiya'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/semiya.jpg"},
+          {"name": appLocalizations.translate('matches_box'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/match.jpg"},
+          {"name": appLocalizations.translate('turmeric_powder'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/tumeric.jpg"},
+          {"name": appLocalizations.translate('kumkum'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/kumkumjpg.jpg"},
+          {"name": appLocalizations.translate('camphor'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/camphor.jpg"}
+        ],
+      }
+    ];
+  }
 
   Future<void> _debugImages() async {
+    categories = getLocalizedCategories(context);
     for (var category in categories) {
-      // print('Checking images for category: ${category['title']}');
       for (var product in category['products']) {
         try {
           await precacheImage(AssetImage(product['image']), context);
-          // print('✅ Successfully loaded: ${product['image']}');
         } catch (e) {
-          // print('❌ Failed to load: ${product['image']}, error: $e');
+          print('Failed to load: ${product['image']}, error: $e');
         }
       }
     }
   }
 
+  void _showLanguageDialog() {
+    final appLocalizations = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(appLocalizations.translate('language_settings')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildLanguageOption('English', 'en'),
+              _buildLanguageOption('தமிழ்', 'ta'),
+              _buildLanguageOption('हिंदी', 'hi'),
+              _buildLanguageOption('తెలుగు', 'te'),
+              _buildLanguageOption('ಕನ್ನಡ', 'kn'),
+              _buildLanguageOption('اردو', 'ur'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption(String name, String code) {
+    return ListTile(
+      title: Text(name),
+      onTap: () async {
+        // Save the selected language
+        await AppLocalizations.setLocale(code);
+        
+        // Update the app locale
+        widget.setLocale(Locale(code, ''));
+        
+        // If user is logged in, update language preference on server
+        if (widget.username != null) {
+          await AppLocalizations.updateLanguageOnServer(widget.username!, code);
+        }
+        
+        Navigator.of(context).pop();
+        
+        // Refresh categories with new language
+        setState(() {
+          categories = getLocalizedCategories(context);
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).translate('language_updated'))),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    categories = getLocalizedCategories(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(shopName, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.deepPurple,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
+          // Language selection button
+          IconButton(
+            icon: Icon(Icons.language),
+            onPressed: _showLanguageDialog,
+          ),
           if (widget.username != null)
             ElevatedButton(
               onPressed: () {
@@ -198,12 +304,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => widget.isAdmin == true
-                        ? AdminScreen()
-                        : UserScreen(username: widget.username!),
+                        ? AdminScreen(setLocale: widget.setLocale)
+                        : UserScreen(username: widget.username!, setLocale: widget.setLocale),
                   ),
                 );
               },
-              child: Text('Actions'),
+              child: Text(appLocalizations.translate('actions')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.deepPurple,
@@ -214,10 +320,10 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                  MaterialPageRoute(builder: (context) => LoginScreen(setLocale: widget.setLocale)),
                 );
               },
-              child: Text('Login'),
+              child: Text(appLocalizations.translate('login')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.deepPurple,
@@ -261,15 +367,15 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  buildPersonCard('Nanjappan', 'Honoured', 'assets/father.jpg'),
-                  buildPersonCard(ownerName, 'Owner', 'assets/owner.jpg'),
-                  buildPersonCard('Suselamma', 'Honoured', 'assets/mother.jpg'),
+                  buildPersonCard(appLocalizations.translate('nanjappan'), appLocalizations.translate('honoured'), 'assets/father.jpg'),
+                  buildPersonCard(ownerName, appLocalizations.translate('owner'), 'assets/owner.jpg'),
+                  buildPersonCard(appLocalizations.translate('suselamma'), appLocalizations.translate('honoured'), 'assets/mother.jpg'),
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              const Text('Address:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(appLocalizations.translate('address') + ':', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 6),
               Text(address, style: TextStyle(fontSize: 15)),
 
@@ -290,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             permission = await Geolocator.requestPermission();
                             if (permission == LocationPermission.denied) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Location permission denied')),
+                                SnackBar(content: Text(appLocalizations.translate('location_permission_denied'))),
                               );
                               return;
                             }
@@ -298,7 +404,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           
                           if (permission == LocationPermission.deniedForever) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Location permissions permanently denied, please enable in settings')),
+                              SnackBar(content: Text(appLocalizations.translate('location_permission_permanently_denied'))),
                             );
                             return;
                           }
@@ -314,18 +420,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               await launchUrl(webUri, mode: LaunchMode.externalApplication);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Could not open maps')),
+                                SnackBar(content: Text(appLocalizations.translate('could_not_open_maps'))),
                               );
                             }
                           }
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error opening maps: $e')),
+                            SnackBar(content: Text(appLocalizations.translate('error_opening_maps') + ': $e')),
                           );
                         }
                       },
                       icon: Icon(Icons.directions, size: 16),
-                      label: Text('Directions', style: TextStyle(fontSize: 14)),
+                      label: Text(appLocalizations.translate('directions'), style: TextStyle(fontSize: 14)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue[700],
                         foregroundColor: Colors.white,
@@ -346,17 +452,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             await launchUrl(phoneUri);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Cannot open phone dialer')),
+                              SnackBar(content: Text(appLocalizations.translate('cannot_open_phone_dialer'))),
                             );
                           }
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error making phone call: $e')),
+                            SnackBar(content: Text(appLocalizations.translate('error_making_phone_call') + ': $e')),
                           );
                         }
                       },
                       icon: Icon(Icons.phone, size: 16),
-                      label: Text('Call', style: TextStyle(fontSize: 14)),
+                      label: Text(appLocalizations.translate('call'), style: TextStyle(fontSize: 14)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green[700],
                         foregroundColor: Colors.white,
@@ -371,11 +477,11 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 20),
 
               /// Service Description
-              Text(serviceDescription, style: TextStyle(fontSize: 15)),
+              Text(appLocalizations.translate('service_description'), style: TextStyle(fontSize: 15)),
               const SizedBox(height: 20),
 
               /// Categories
-              const Text('Categories:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(appLocalizations.translate('categories') + ':', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
 
               Column(
@@ -396,7 +502,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
-                        child: const Text('View More'),
+                        child: Text(appLocalizations.translate('view_more')),
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           textStyle: TextStyle(fontSize: 13),
@@ -451,6 +557,8 @@ class CategoryDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(category['title']),
@@ -470,8 +578,8 @@ class CategoryDetailsPage extends StatelessWidget {
               style: const TextStyle(fontSize: 18, color: Colors.grey),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Products:',
+            Text(
+              appLocalizations.translate('products') + ':',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
@@ -514,6 +622,10 @@ class CategoryDetailsPage extends StatelessWidget {
 }
 
 class LoginScreen extends StatefulWidget {
+  final Function(Locale) setLocale;
+  
+  LoginScreen({required this.setLocale});
+  
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -540,25 +652,31 @@ class _LoginScreenState extends State<LoginScreen> {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('username', _username);
             await prefs.setBool('isAdmin', data['isAdmin']);
+            
+            // Save the language preference if available
+            if (data['language'] != null) {
+              await AppLocalizations.setLocale(data['language']);
+              widget.setLocale(Locale(data['language'], ''));
+            }
 
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomeScreen(username: _username, isAdmin: data['isAdmin'])),
+              MaterialPageRoute(builder: (context) => HomeScreen(username: _username, isAdmin: data['isAdmin'], setLocale: widget.setLocale)),
             );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Invalid credentials. Please try again.')),
+              SnackBar(content: Text(AppLocalizations.of(context).translate('invalid_credentials'))),
             );
           }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login failed. Please try again.')),
+            SnackBar(content: Text(AppLocalizations.of(context).translate('login_failed'))),
           );
         }
       } catch (e) {
         print('Error during login: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred. Please try again later.')),
+          SnackBar(content: Text(AppLocalizations.of(context).translate('error_occurred'))),
         );
       }
     }
@@ -566,10 +684,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: Text(appLocalizations.translate('login')),
         backgroundColor: Colors.deepPurple,
+        actions: [
+          // Language selection button
+          IconButton(
+            icon: Icon(Icons.language),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text(appLocalizations.translate('language_settings')),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildLanguageOption('English', 'en'),
+                        _buildLanguageOption('தமிழ்', 'ta'),
+                        _buildLanguageOption('हिंदी', 'hi'),
+                        _buildLanguageOption('తెలుగు', 'te'),
+                        _buildLanguageOption('ಕನ್ನಡ', 'kn'),
+                        _buildLanguageOption('اردو', 'ur'),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -578,22 +725,22 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               TextFormField(
-                decoration: InputDecoration(labelText: 'User ID'),
+                decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
                 keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Please enter your User ID' : null,
+                validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_user_id') : null,
                 onSaved: (value) => _username = value!,
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Phone Number'),
+                decoration: InputDecoration(labelText: appLocalizations.translate('phone_number')),
                 keyboardType: TextInputType.phone,
                 obscureText: true,
-                validator: (value) => value!.isEmpty ? 'Please enter your phone number' : null,
+                validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_phone_number') : null,
                 onSaved: (value) => _password = value!,
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _login,
-                child: Text('Login'),
+                child: Text(appLocalizations.translate('login')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
                   foregroundColor: Colors.white,
@@ -605,39 +752,91 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+  
+  Widget _buildLanguageOption(String name, String code) {
+    return ListTile(
+      title: Text(name),
+      onTap: () async {
+        // Save the selected language
+        await AppLocalizations.setLocale(code);
+        
+        // Update the app locale
+        widget.setLocale(Locale(code, ''));
+        
+        Navigator.of(context).pop();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).translate('language_updated'))),
+        );
+      },
+    );
+  }
 }
 
 class AdminScreen extends StatelessWidget {
+  final Function(Locale) setLocale;
+  
+  AdminScreen({required this.setLocale});
+  
   Future<void> _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
+      MaterialPageRoute(builder: (context) => HomeScreen(setLocale: setLocale)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Dashboard'),
+        title: Text(appLocalizations.translate('admin_dashboard')),
         backgroundColor: Colors.deepPurple,
+        actions: [
+          // Language selection button
+          IconButton(
+            icon: Icon(Icons.language),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text(appLocalizations.translate('language_settings')),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildLanguageOption(context, 'English', 'en'),
+                        _buildLanguageOption(context, 'தமிழ்', 'ta'),
+                        _buildLanguageOption(context, 'हिंदी', 'hi'),
+                        _buildLanguageOption(context, 'తెలుగు', 'te'),
+                        _buildLanguageOption(context, 'ಕನ್ನಡ', 'kn'),
+                        _buildLanguageOption(context, 'اردو', 'ur'),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Welcome, Admin!', style: TextStyle(fontSize: 24)),
+            Text(appLocalizations.translate('welcome') + ', Admin!', style: TextStyle(fontSize: 24)),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AdminOperationsScreen()),
+                  MaterialPageRoute(builder: (context) => AdminOperationsScreen(setLocale: setLocale)),
                 );
               },
-              child: Text('Operations'),
+              child: Text(appLocalizations.translate('operations')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 foregroundColor: Colors.white,
@@ -648,10 +847,10 @@ class AdminScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AdminPaymentApprovalScreen()),
+                  MaterialPageRoute(builder: (context) => AdminPaymentApprovalScreen(setLocale: setLocale)),
                 );
               },
-              child: Text('Pending Payments'),
+              child: Text(appLocalizations.translate('pending_payments')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurple,
                 foregroundColor: Colors.white,
@@ -663,10 +862,10 @@ class AdminScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TrashScreen()),
+                  MaterialPageRoute(builder: (context) => TrashScreen(setLocale: setLocale)),
                 );
               },
-              child: Text('Trash'),
+              child: Text(appLocalizations.translate('trash')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red[700],
                 foregroundColor: Colors.white,
@@ -675,7 +874,7 @@ class AdminScreen extends StatelessWidget {
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: () => _logout(context),
-              child: Text('Logout'),
+              child: Text(appLocalizations.translate('logout')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
@@ -686,10 +885,33 @@ class AdminScreen extends StatelessWidget {
       ),
     );
   }
+  
+  Widget _buildLanguageOption(BuildContext context, String name, String code) {
+    return ListTile(
+      title: Text(name),
+      onTap: () async {
+        // Save the selected language
+        await AppLocalizations.setLocale(code);
+        
+        // Update the app locale
+        setLocale(Locale(code, ''));
+        
+        Navigator.of(context).pop();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).translate('language_updated'))),
+        );
+      },
+    );
+  }
 }
 
 // NEW: Added TrashScreen to manage deleted users
 class TrashScreen extends StatefulWidget {
+  final Function(Locale) setLocale;
+  
+  TrashScreen({required this.setLocale});
+  
   @override
   _TrashScreenState createState() => _TrashScreenState();
 }
@@ -746,7 +968,7 @@ class _TrashScreenState extends State<TrashScreen> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User restored successfully')),
+          SnackBar(content: Text(AppLocalizations.of(context).translate('user_restored'))),
         );
         _fetchDeletedUsers(); // Refresh the list
       } else {
@@ -769,7 +991,7 @@ class _TrashScreenState extends State<TrashScreen> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User permanently deleted')),
+          SnackBar(content: Text(AppLocalizations.of(context).translate('user_permanently_deleted'))),
         );
         _fetchDeletedUsers(); // Refresh the list
       } else {
@@ -785,25 +1007,31 @@ class _TrashScreenState extends State<TrashScreen> {
   }
 
   void _showDeleteConfirmationDialog(int userId, String userName) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Permanently Delete User'),
-          content: Text('Are you sure you want to permanently delete $userName (ID: $userId)? This action cannot be undone.'),
+          title: Text(appLocalizations.translate('permanently_delete_user')),
+          content: Text(
+            appLocalizations.translate('are_you_sure_permanent_delete')
+                .replaceAll('{name}', userName)
+                .replaceAll('{id}', userId.toString())
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: Text(appLocalizations.translate('cancel')),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _permanentlyDeleteUser(userId);
               },
-              child: Text('Delete Permanently', style: TextStyle(color: Colors.red)),
+              child: Text(appLocalizations.translate('delete_permanently'), style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -813,15 +1041,17 @@ class _TrashScreenState extends State<TrashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Trash'),
+        title: Text(appLocalizations.translate('trash')),
         backgroundColor: Colors.red[700],
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _deletedUsers.isEmpty
-              ? Center(child: Text('No deleted users found'))
+              ? Center(child: Text(appLocalizations.translate('no_deleted_users_found')))
               : ListView.builder(
                   itemCount: _deletedUsers.length,
                   itemBuilder: (context, index) {
@@ -837,9 +1067,9 @@ class _TrashScreenState extends State<TrashScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Village: ${user['c_vill']}, Category: ${user['c_category']}'),
-                            Text('Phone: ${user['phone']}'),
-                            Text('Deleted on: $deletedAt'),
+                            Text('${appLocalizations.translate('village')}: ${user['c_vill']}, ${appLocalizations.translate('category')}: ${user['c_category']}'),
+                            Text('${appLocalizations.translate('phone_number')}: ${user['phone']}'),
+                            Text('${appLocalizations.translate('deleted_on')}: $deletedAt'),
                           ],
                         ),
                         trailing: Row(
@@ -848,12 +1078,12 @@ class _TrashScreenState extends State<TrashScreen> {
                             IconButton(
                               icon: Icon(Icons.restore, color: Colors.green),
                               onPressed: () => _restoreUser(user['_id']),
-                              tooltip: 'Restore User',
+                              tooltip: appLocalizations.translate('restore_user'),
                             ),
                             IconButton(
                               icon: Icon(Icons.delete_forever, color: Colors.red),
                               onPressed: () => _showDeleteConfirmationDialog(user['_id'], user['c_name']),
-                              tooltip: 'Delete Permanently',
+                              tooltip: appLocalizations.translate('delete_permanently'),
                             ),
                           ],
                         ),
@@ -866,6 +1096,10 @@ class _TrashScreenState extends State<TrashScreen> {
 }
 
 class AdminPaymentApprovalScreen extends StatefulWidget {
+  final Function(Locale) setLocale;
+  
+  AdminPaymentApprovalScreen({required this.setLocale});
+  
   @override
   _AdminPaymentApprovalScreenState createState() => _AdminPaymentApprovalScreenState();
 }
@@ -907,7 +1141,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
       );
     }
   }
-  
+
   Future<void> _approvePayment(String transactionId) async {
     try {
       final response = await http.post(
@@ -918,7 +1152,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment approved successfully')),
+          SnackBar(content: Text(AppLocalizations.of(context).translate('payment_approved'))),
         );
         _fetchPendingTransactions(); // Refresh the list after approval
       } else {
@@ -943,7 +1177,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment rejected successfully')),
+          SnackBar(content: Text(AppLocalizations.of(context).translate('payment_rejected'))),
         );
         _fetchPendingTransactions(); // Refresh the list after rejection
       } else {
@@ -960,13 +1194,15 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pending Payment Requests'),
+        title: Text(appLocalizations.translate('pending_payments')),
         backgroundColor: Colors.deepPurple,
       ),
       body: _pendingTransactions.isEmpty
-          ? Center(child: Text('No pending payment requests.'))
+          ? Center(child: Text(appLocalizations.translate('no_pending_payment_requests')))
           : ListView.builder(
               itemCount: _pendingTransactions.length,
               itemBuilder: (context, index) {
@@ -974,13 +1210,13 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
                 return Card(
                   margin: EdgeInsets.all(8.0),
                   child: ListTile(
-                    title: Text('User ID: ${transaction['userId']}'),
+                    title: Text('${appLocalizations.translate('user_id')}: ${transaction['userId']}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Month: ${transaction['month']}'),
-                        Text('Amount: ₹${transaction['amount']}'),
-                        Text('Transaction ID: ${transaction['transactionId']}'),
+                        Text('${appLocalizations.translate('month')}: ${transaction['month']}'),
+                        Text('${appLocalizations.translate('amount')}: ₹${transaction['amount']}'),
+                        Text('${appLocalizations.translate('transaction_id')}: ${transaction['transactionId']}'),
                       ],
                     ),
                     trailing: Row(
@@ -989,10 +1225,12 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
                         IconButton(
                           icon: Icon(Icons.check, color: Colors.green),
                           onPressed: () => _approvePayment(transaction['transactionId']),
+                          tooltip: appLocalizations.translate('approve'),
                         ),
                         IconButton(
                           icon: Icon(Icons.close, color: Colors.red),
                           onPressed: () => _rejectPayment(transaction['transactionId']),
+                          tooltip: appLocalizations.translate('reject'),
                         ),
                       ],
                     ),
@@ -1005,6 +1243,10 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
 }
 
 class AdminOperationsScreen extends StatefulWidget {
+  final Function(Locale) setLocale;
+  
+  AdminOperationsScreen({required this.setLocale});
+  
   @override
   _AdminOperationsScreenState createState() => _AdminOperationsScreenState();
 }
@@ -1028,7 +1270,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   String _selectedVillage = '';
   List<Map<String, dynamic>> _villageUsers = [];
   List<Map<String, dynamic>> _inactiveUsers = [];
-  
+
   String _selectedOperation = '';
   Map<String, dynamic> _userToDelete = {};
 
@@ -1075,7 +1317,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _searchByVillage() async {
     if (_selectedVillage.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a village')),
+        SnackBar(content: Text(AppLocalizations.of(context).translate('please_select_village'))),
       );
       return;
     }
@@ -1142,7 +1384,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
         if (response.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('User added successfully')),
+            SnackBar(content: Text(AppLocalizations.of(context).translate('user_added'))),
           );
           _clearForm();
         } else {
@@ -1161,7 +1403,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _fetchUserDetailsForDeletion() async {
     if (_userIdController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a User ID to delete')),
+        SnackBar(content: Text(AppLocalizations.of(context).translate('please_enter_user_id_to_delete'))),
       );
       return;
     }
@@ -1191,24 +1433,26 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   void _showDeleteConfirmationDialog() {
+    final appLocalizations = AppLocalizations.of(context);
+    
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Deletion'),
+          title: Text(appLocalizations.translate('confirm_deletion')),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Are you sure you want to move this user to trash?'),
+              Text(appLocalizations.translate('are_you_sure_delete')),
               SizedBox(height: 20),
-              Text('User Details:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(appLocalizations.translate('user_details') + ':', style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               Text('ID: ${_userToDelete['_id']}'),
-              Text('Name: ${_userToDelete['c_name']}'),
-              Text('Village: ${_userToDelete['c_vill']}'),
-              Text('Category: ${_userToDelete['c_category']}'),
-              Text('Phone: ${_userToDelete['phone']}'),
+              Text(appLocalizations.translate('name') + ': ${_userToDelete['c_name']}'),
+              Text(appLocalizations.translate('village') + ': ${_userToDelete['c_vill']}'),
+              Text(appLocalizations.translate('category') + ': ${_userToDelete['c_category']}'),
+              Text(appLocalizations.translate('phone_number') + ': ${_userToDelete['phone']}'),
             ],
           ),
           actions: [
@@ -1216,14 +1460,14 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('Cancel'),
+              child: Text(appLocalizations.translate('cancel')),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
                 _deleteUser(); // Proceed with deletion
               },
-              child: Text('Move to Trash', style: TextStyle(color: Colors.red)),
+              child: Text(appLocalizations.translate('move_to_trash'), style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -1239,12 +1483,12 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User moved to trash successfully')),
+          SnackBar(content: Text(AppLocalizations.of(context).translate('user_moved_to_trash'))),
         );
         _clearForm();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete user: ${response.body}')),
+          SnackBar(content: Text(AppLocalizations.of(context).translate('failed_to_delete_user') + ': ${response.body}')),
         );
       }
     } catch (e) {
@@ -1292,7 +1536,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
         if (response.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Payment added successfully')),
+            SnackBar(content: Text(AppLocalizations.of(context).translate('payment_added'))),
           );
           _clearForm();
         } else {
@@ -1311,7 +1555,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _viewPayments() async {
     if (_userIdController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a User ID to view payments')),
+        SnackBar(content: Text(AppLocalizations.of(context).translate('please_enter_user_id_to_view_payments'))),
       );
       return;
     }
@@ -1340,7 +1584,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _viewPaymentsByMonth() async {
     if (_monthController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a month to view payments')),
+        SnackBar(content: Text(AppLocalizations.of(context).translate('please_enter_month_to_view_payments'))),
       );
       return;
     }
@@ -1417,6 +1661,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildOperationButton(String operation) {
+    final appLocalizations = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: ElevatedButton(
@@ -1433,7 +1678,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
             }
           });
         },
-        child: Text(operation),
+        child: Text(appLocalizations.translate(operation.toLowerCase().replaceAll('\n', '_'))),
         style: ElevatedButton.styleFrom(
           backgroundColor: _selectedOperation == operation ? Colors.deepPurple : Colors.grey,
           foregroundColor: Colors.white,
@@ -1467,33 +1712,34 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildAddUserForm() {
+    final appLocalizations = AppLocalizations.of(context);
     return Form(
       key: _formKey,
       child: Column(
         children: [
           TextFormField(
             controller: _userIdController,
-            decoration: InputDecoration(labelText: 'User ID'),
+            decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
             keyboardType: TextInputType.number,
-            validator: (value) => value!.isEmpty ? 'Please enter a user ID' : null,
+            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_user_id') : null,
           ),
           TextFormField(
             controller: _nameController,
-            decoration: InputDecoration(labelText: 'Name'),
-            validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
+            decoration: InputDecoration(labelText: appLocalizations.translate('name')),
+            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_name') : null,
           ),
           TextFormField(
             controller: _villageController,
-            decoration: InputDecoration(labelText: 'Village'),
-            validator: (value) => value!.isEmpty ? 'Please enter a village' : null,
+            decoration: InputDecoration(labelText: appLocalizations.translate('village')),
+            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_village') : null,
           ),
           DropdownButtonFormField<String>(
             value: _selectedCategory,
-            decoration: InputDecoration(labelText: 'Category'),
+            decoration: InputDecoration(labelText: appLocalizations.translate('category')),
             items: categories.map((String category) {
               return DropdownMenuItem<String>(
                 value: category,
-                child: Text(category),
+                child: Text(appLocalizations.translate(category.toLowerCase() + '_category')),
               );
             }).toList(),
             onChanged: (String? newValue) {
@@ -1504,14 +1750,14 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           ),
           TextFormField(
             controller: _phoneController,
-            decoration: InputDecoration(labelText: 'Phone'),
+            decoration: InputDecoration(labelText: appLocalizations.translate('phone_number')),
             keyboardType: TextInputType.phone,
-            validator: (value) => value!.isEmpty ? 'Please enter a phone number' : null,
+            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_phone_number') : null,
           ),
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: _addUser,
-            child: Text('Add User'),
+            child: Text(appLocalizations.translate('add_user')),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple,
               foregroundColor: Colors.white,
@@ -1523,17 +1769,18 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildDeleteUserForm() {
+    final appLocalizations = AppLocalizations.of(context);
     return Column(
       children: [
         TextFormField(
           controller: _userIdController,
-          decoration: InputDecoration(labelText: 'User ID'),
+          decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
           keyboardType: TextInputType.number,
         ),
         SizedBox(height: 20),
         ElevatedButton(
           onPressed: _fetchUserDetailsForDeletion,
-          child: Text('Move User to Trash'),
+          child: Text(appLocalizations.translate('move_user_to_trash')),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
@@ -1544,11 +1791,12 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildViewAllUsersContent() {
+    final appLocalizations = AppLocalizations.of(context);
     return Column(
       children: [
         ElevatedButton(
           onPressed: _viewAllUsers,
-          child: Text('Refresh Users List'),
+          child: Text(appLocalizations.translate('refresh_users_list')),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
@@ -1557,14 +1805,14 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
         SizedBox(height: 10),
         if (_users.isNotEmpty)
           Text(
-            'Total Users: ${_users.length}',
+            '${appLocalizations.translate('total_users')}: ${_users.length}',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         SizedBox(height: 10),
         TextField(
           controller: _searchController,
           decoration: InputDecoration(
-            labelText: 'Search Users',
+            labelText: appLocalizations.translate('search_users'),
             suffixIcon: Icon(Icons.search),
           ),
           onChanged: (value) {
@@ -1591,8 +1839,8 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
               final user = _users[index];
               return ListTile(
                 title: Text('${user['_id']} - ${user['c_name']}'),
-                subtitle: Text('Village: ${user['c_vill']}, Category: ${user['c_category']}'),
-                trailing: Text('Payments: ${user['paymentCount']}'),
+                subtitle: Text('${appLocalizations.translate('village')}: ${user['c_vill']}, ${appLocalizations.translate('category')}: ${user['c_category']}'),
+                trailing: Text('${appLocalizations.translate('payments')}: ${user['paymentCount']}'),
               );
             },
           ),
@@ -1602,37 +1850,38 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildAddPaymentForm() {
+    final appLocalizations = AppLocalizations.of(context);
     return Form(
       key: _formKey,
       child: Column(
         children: [
           TextFormField(
             controller: _userIdController,
-            decoration: InputDecoration(labelText: 'User ID'),
+            decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
             keyboardType: TextInputType.number,
-            validator: (value) => value!.isEmpty ? 'Please enter a user ID' : null,
+            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_user_id') : null,
             onChanged: (_) => _fetchUserDetails(),
           ),
           TextFormField(
             controller: _nameController,
-            decoration: InputDecoration(labelText: 'Name'),
+            decoration: InputDecoration(labelText: appLocalizations.translate('name')),
             readOnly: true,
           ),
           TextFormField(
             controller: _amountController,
-            decoration: InputDecoration(labelText: 'Amount'),
+            decoration: InputDecoration(labelText: appLocalizations.translate('amount')),
             keyboardType: TextInputType.number,
-            validator: (value) => value!.isEmpty ? 'Please enter an amount' : null,
+            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_amount') : null,
           ),
           TextFormField(
             controller: _monthController,
-            decoration: InputDecoration(labelText: 'Month'),
-            validator: (value) => value!.isEmpty ? 'Please enter a month' : null,
+            decoration: InputDecoration(labelText: appLocalizations.translate('month')),
+            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_month') : null,
           ),
           SizedBox(height: 20),
           ElevatedButton(
             onPressed: _addPayment,
-            child: Text('Add Payment'),
+            child: Text(appLocalizations.translate('add_payment')),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple,
               foregroundColor: Colors.white,
@@ -1644,17 +1893,18 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildViewPaymentsContent() {
+    final appLocalizations = AppLocalizations.of(context);
     return Column(
       children: [
         TextFormField(
           controller: _userIdController,
-          decoration: InputDecoration(labelText: 'User ID'),
+          decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
           keyboardType: TextInputType.number,
         ),
         SizedBox(height: 20),
         ElevatedButton(
           onPressed: _viewPayments,
-          child: Text('View Payments'),
+          child: Text(appLocalizations.translate('view_payments')),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
@@ -1667,8 +1917,8 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
             itemBuilder: (context, index) {
               final payment = _payments[index];
               return ListTile(
-                title: Text('Amount: ${payment['amount']}'),
-                subtitle: Text('Month: ${payment['p_month']}, User: ${payment['c_name']}'),
+                title: Text('${appLocalizations.translate('amount')}: ${payment['amount']}'),
+                subtitle: Text('${appLocalizations.translate('month')}: ${payment['p_month']}, ${appLocalizations.translate('user')}: ${payment['c_name']}'),
               );
             },
           ),
@@ -1678,16 +1928,17 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildViewPaymentsByMonthContent() {
+    final appLocalizations = AppLocalizations.of(context);
     return Column(
       children: [
         TextFormField(
           controller: _monthController,
-          decoration: InputDecoration(labelText: 'Month (e.g., 01 for January)'),
+          decoration: InputDecoration(labelText: appLocalizations.translate('month_format')),
         ),
         SizedBox(height: 20),
         ElevatedButton(
           onPressed: _viewPaymentsByMonth,
-          child: Text('View Payments by Month'),
+          child: Text(appLocalizations.translate('view_payments_by_month')),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
@@ -1702,8 +1953,8 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
                 children: [
                   TabBar(
                     tabs: [
-                      Tab(text: 'Paid (${_paidUsers.length})'),
-                      Tab(text: 'Unpaid (${_unpaidUsers.length})'),
+                      Tab(text: '${appLocalizations.translate('paid')} (${_paidUsers.length})'),
+                      Tab(text: '${appLocalizations.translate('unpaid')} (${_unpaidUsers.length})'),
                     ],
                     labelColor: Colors.deepPurple,
                     unselectedLabelColor: Colors.grey,
@@ -1727,8 +1978,9 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildUserList(List<Map<String, dynamic>> users, bool isPaid) {
+    final appLocalizations = AppLocalizations.of(context);
     return users.isEmpty
-        ? Center(child: Text('No ${isPaid ? 'paid' : 'unpaid'} users for this month'))
+        ? Center(child: Text(appLocalizations.translate(isPaid ? 'no_paid_users' : 'no_unpaid_users')))
         : ListView.builder(
             itemCount: users.length,
             itemBuilder: (context, index) {
@@ -1741,7 +1993,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
                     child: Text('${index + 1}'),
                   ),
                   title: Text('ID: ${user['_id']} - ${user['c_name']}'),
-                  subtitle: Text('Village: ${user['c_vill']}, Category: ${user['c_category']}, Phone: ${user['number']}'),
+                  subtitle: Text('${appLocalizations.translate('village')}: ${user['c_vill']}, ${appLocalizations.translate('category')}: ${user['c_category']}, ${appLocalizations.translate('phone_number')}: ${user['number']}'),
                   trailing: isPaid
                       ? Text('₹${user['amount']}', style: TextStyle(fontWeight: FontWeight.bold))
                       : null,
@@ -1752,11 +2004,12 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildSearchByVillageContent() {
+    final appLocalizations = AppLocalizations.of(context);
     return Column(
       children: [
         DropdownButton<String>(
           value: _selectedVillage.isNotEmpty ? _selectedVillage : null,
-          hint: Text('Select Village'),
+          hint: Text(appLocalizations.translate('select_village')),
           isExpanded: true,
           items: _villages.map((String village) {
             return DropdownMenuItem<String>(
@@ -1773,7 +2026,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
         SizedBox(height: 20),
         ElevatedButton(
           onPressed: _searchByVillage,
-          child: Text('Search'),
+          child: Text(appLocalizations.translate('search')),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
@@ -1782,7 +2035,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
         SizedBox(height: 20),
         if (_villageUsers.isNotEmpty)
           Text(
-            'Customers in ${_selectedVillage}: ${_villageUsers.length}',
+            '${appLocalizations.translate('customers_in')} ${_selectedVillage}: ${_villageUsers.length}',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         SizedBox(height: 10),
@@ -1793,8 +2046,8 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
               final user = _villageUsers[index];
               return ListTile(
                 title: Text('ID: ${user['_id']} - ${user['c_name']}'),
-                subtitle: Text('Category: ${user['c_category']}'),
-                trailing: Text('Payments: ${user['paymentCount']}'),
+                subtitle: Text('${appLocalizations.translate('category')}: ${user['c_category']}'),
+                trailing: Text('${appLocalizations.translate('payments')}: ${user['paymentCount']}'),
               );
             },
           ),
@@ -1804,11 +2057,12 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildInactiveCustomersContent() {
+    final appLocalizations = AppLocalizations.of(context);
     return Column(
       children: [
         ElevatedButton(
           onPressed: _fetchInactiveCustomers,
-          child: Text('Refresh Inactive Customers'),
+          child: Text(appLocalizations.translate('refresh_inactive_customers')),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
@@ -1817,7 +2071,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
         SizedBox(height: 20),
         if (_inactiveUsers.isNotEmpty)
           Text(
-            'Inactive Customers: ${_inactiveUsers.length}',
+            '${appLocalizations.translate('inactive_customers')}: ${_inactiveUsers.length}',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
           ),
         SizedBox(height: 10),
@@ -1833,9 +2087,9 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Phone: ${user['phone']}'),
-                      Text('Village: ${user['village']}, Category: ${user['category']}'),
-                      Text('Last Payment: ${user['lastPaymentMonth']}'),
+                      Text('${appLocalizations.translate('phone_number')}: ${user['phone']}'),
+                      Text('${appLocalizations.translate('village')}: ${user['village']}, ${appLocalizations.translate('category')}: ${user['category']}'),
+                      Text('${appLocalizations.translate('last_payment')}: ${user['lastPaymentMonth']}'),
                     ],
                   ),
                   trailing: Text('₹${user['lastPaymentAmount']}'),
@@ -1850,9 +2104,10 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Operations'),
+        title: Text(appLocalizations.translate('admin_operations')),
         backgroundColor: Colors.deepPurple,
       ),
       body: Row(
@@ -1891,8 +2146,9 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
 class UserScreen extends StatefulWidget {
   final String username;
+  final Function(Locale) setLocale;
 
-  UserScreen({required this.username});
+  UserScreen({required this.username, required this.setLocale});
 
   @override
   _UserScreenState createState() => _UserScreenState();
@@ -1982,23 +2238,49 @@ class _UserScreenState extends State<UserScreen> {
     await prefs.clear();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
+      MaterialPageRoute(builder: (context) => HomeScreen(setLocale: widget.setLocale)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Dashboard'),
+        title: Text(appLocalizations.translate('user_dashboard')),
         backgroundColor: Colors.deepPurple,
         actions: [
+          IconButton(
+            icon: Icon(Icons.language),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text(appLocalizations.translate('language_settings')),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildLanguageOption(context, 'English', 'en'),
+                        _buildLanguageOption(context, 'தமிழ்', 'ta'),
+                        _buildLanguageOption(context, 'हिंदी', 'hi'),
+                        _buildLanguageOption(context, 'తెలుగు', 'te'),
+                        _buildLanguageOption(context, 'ಕನ್ನಡ', 'kn'),
+                        _buildLanguageOption(context, 'اردو', 'ur'),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
           IconButton(
             icon: Icon(Icons.notifications),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => NotificationsScreen(notifications: _notifications)),
+                MaterialPageRoute(builder: (context) => NotificationsScreen(notifications: _notifications, setLocale: widget.setLocale)),
               );
             },
           ),
@@ -2007,7 +2289,7 @@ class _UserScreenState extends State<UserScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PaymentScreen(username: widget.username)),
+                MaterialPageRoute(builder: (context) => PaymentScreen(username: widget.username, setLocale: widget.setLocale)),
               );
             },
           ),
@@ -2019,31 +2301,31 @@ class _UserScreenState extends State<UserScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Welcome, ${_userDetails['c_name'] ?? widget.username}!', 
+              Text('${appLocalizations.translate('welcome')}, ${_userDetails['c_name'] ?? widget.username}!', 
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               SizedBox(height: 20),
-              Text('User Details:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(appLocalizations.translate('user_details') + ':', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               Text('ID: ${_userDetails['_id'] ?? 'N/A'}'),
-              Text('Name: ${_userDetails['c_name'] ?? 'N/A'}'),
-              Text('Village: ${_userDetails['c_vill'] ?? 'N/A'}'),
-              Text('Phone: ${_userDetails['phone'] ?? 'N/A'}'),
-              Text('Category: ${_userDetails['c_category'] ?? 'N/A'}'),
+              Text('${appLocalizations.translate('name')}: ${_userDetails['c_name'] ?? 'N/A'}'),
+              Text('${appLocalizations.translate('village')}: ${_userDetails['c_vill'] ?? 'N/A'}'),
+              Text('${appLocalizations.translate('phone_number')}: ${_userDetails['phone'] ?? 'N/A'}'),
+              Text('${appLocalizations.translate('category')}: ${_userDetails['c_category'] ?? 'N/A'}'),
               SizedBox(height: 20),
-              Text('Payment History:', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(appLocalizations.translate('payment_history') + ':', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               _payments.isEmpty
-                ? Text('No payments found.')
+                ? Text(appLocalizations.translate('no_payments_found'))
                 : Column(
                     children: _payments.map((payment) => ListTile(
-                      title: Text('Amount: ${payment['amount']}'),
-                      subtitle: Text('Month: ${payment['p_month']}'),
+                      title: Text('${appLocalizations.translate('amount')}: ${payment['amount']}'),
+                      subtitle: Text('${appLocalizations.translate('month')}: ${payment['p_month']}'),
                     )).toList(),
                   ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () => _logout(context),
-                child: Text('Logout'),
+                child: Text(appLocalizations.translate('logout')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
@@ -2055,38 +2337,66 @@ class _UserScreenState extends State<UserScreen> {
       ),
     );
   }
+  
+  Widget _buildLanguageOption(BuildContext context, String name, String code) {
+    return ListTile(
+      title: Text(name),
+      onTap: () async {
+        // Save the selected language
+        await AppLocalizations.setLocale(code);
+        
+        // Update the app locale
+        widget.setLocale(Locale(code, ''));
+        
+        // Update language preference on server
+        await AppLocalizations.updateLanguageOnServer(widget.username, code);
+        
+        Navigator.of(context).pop();
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).translate('language_updated'))),
+        );
+      },
+    );
+  }
 }
 
 class NotificationsScreen extends StatelessWidget {
   final List<Map<String, dynamic>> notifications;
+  final Function(Locale) setLocale;
 
-  NotificationsScreen({required this.notifications});
+  NotificationsScreen({required this.notifications, required this.setLocale});
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications'),
+        title: Text(appLocalizations.translate('notifications')),
         backgroundColor: Colors.deepPurple,
       ),
-      body: ListView.builder(
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          final notification = notifications[index];
-          return ListTile(
-            title: Text(notification['message']),
-            subtitle: Text(DateTime.parse(notification['createdAt']).toString()),
-          );
-        },
-      ),
+      body: notifications.isEmpty
+          ? Center(child: Text(appLocalizations.translate('no_notifications')))
+          : ListView.builder(
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+                return ListTile(
+                  title: Text(notification['message']),
+                  subtitle: Text(DateTime.parse(notification['createdAt']).toString()),
+                );
+              },
+            ),
     );
   }
 }
 
 class PaymentScreen extends StatefulWidget {
   final String username;
+  final Function(Locale) setLocale;
 
-  PaymentScreen({required this.username});
+  PaymentScreen({required this.username, required this.setLocale});
 
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
@@ -2153,9 +2463,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _requestPayment() async {
+    final appLocalizations = AppLocalizations.of(context);
+    
     if (_transactionIdController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a transaction ID')),
+        SnackBar(content: Text(appLocalizations.translate('please_enter_transaction_id'))),
       );
       return;
     }
@@ -2174,28 +2486,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Payment request submitted successfully')),
+          SnackBar(content: Text(appLocalizations.translate('payment_request_submitted'))),
         );
         // Refresh payment status after submitting
         _checkPaymentStatus();
       } else {
         final errorData = json.decode(response.body);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorData['error'] ?? 'Failed to submit payment request')),
+          SnackBar(content: Text(errorData['error'] ?? appLocalizations.translate('failed_to_submit_payment_request'))),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(content: Text(appLocalizations.translate('error_occurred') + ': $e')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Make Payment'),
+        title: Text(appLocalizations.translate('make_payment')),
         backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
@@ -2208,7 +2522,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 final month = (index + 1).toString().padLeft(2, '0'); 
                 return DropdownMenuItem<String>(
                   value: month,
-                  child: Text('Month $month'),
+                  child: Text('${appLocalizations.translate('month')} $month'),
                 );
               }),
               onChanged: (String? newValue) {
@@ -2231,7 +2545,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       Icon(Icons.check_circle, color: Colors.green, size: 48),
                       SizedBox(height: 10),
                       Text(
-                        'Payment for month $_selectedMonth is already made.',
+                        appLocalizations.translate('payment_already_made').replaceAll('{month}', _selectedMonth),
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
@@ -2254,8 +2568,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                             children: [
                               Icon(Icons.qr_code, size: 48, color: Colors.grey[600]),
                               SizedBox(height: 8),
-                              Text('QR Code not available', style: TextStyle(color: Colors.grey[600])),
-                              Text('Please contact admin for payment details', style: TextStyle(color: Colors.grey[600])),
+                              Text(appLocalizations.translate('qr_code_not_available'), style: TextStyle(color: Colors.grey[600])),
+                              Text(appLocalizations.translate('contact_admin_for_payment_details'), style: TextStyle(color: Colors.grey[600])),
                             ],
                           ),
                         );
@@ -2264,12 +2578,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     SizedBox(height: 20),
                     TextFormField(
                       controller: _transactionIdController,
-                      decoration: InputDecoration(labelText: 'Transaction ID'),
+                      decoration: InputDecoration(labelText: appLocalizations.translate('transaction_id')),
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _requestPayment,
-                      child: Text('Submit Payment'),
+                      child: Text(appLocalizations.translate('submit_payment')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepPurple,
                         foregroundColor: Colors.white,

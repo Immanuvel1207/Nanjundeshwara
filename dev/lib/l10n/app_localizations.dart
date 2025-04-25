@@ -9,105 +9,11 @@ import 'app_localizations_delegate.dart';
 class AppLocalizations {
   final Locale locale;
   
-  AppLocalizations(this.locale);
+  // Cache for translations to reduce API calls
+  static Map<String, Map<String, String>> _translationCache = {};
   
-  // Helper method to keep the code in the widgets concise
-  static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
-  }
-  
-  // Static member to have a simple access to the delegate from the MaterialApp
-  static const LocalizationsDelegate<AppLocalizations> delegate = AppLocalizationsDelegate();
-  
-  // List of supported languages
-  static final List<Locale> supportedLocales = [
-    const Locale('en', ''), // English
-    const Locale('ta', ''), // Tamil
-    const Locale('hi', ''), // Hindi
-    const Locale('te', ''), // Telugu
-    const Locale('kn', ''), // Kannada
-    const Locale('ur', ''), // Urdu
-  ];
-  
-  // Method to get the current locale from shared preferences
-  static Future<Locale> getLocale() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String languageCode = prefs.getString('languageCode') ?? 'en';
-    return Locale(languageCode, '');
-  }
-  
-  // Method to set the locale in shared preferences
-  static Future<void> setLocale(String languageCode) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('languageCode', languageCode);
-  }
-  
-  // Method to update the user's language preference on the server
-  static Future<void> updateLanguageOnServer(String userId, String languageCode) async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost:4000/update_language'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'userId': int.parse(userId), 'language': languageCode}),
-      );
-      
-      if (response.statusCode != 200) {
-        print('Failed to update language on server: ${response.body}');
-      }
-    } catch (e) {
-      print('Error updating language on server: $e');
-    }
-  }
-  
-  // Translations map
-  late Map<String, String> _localizedStrings;
-  
-  Future<bool> load() async {
-    // Load the language JSON file from the "lib/l10n" folder
-    _localizedStrings = await _loadTranslations(locale.languageCode);
-    return true;
-  }
-  
-  // This method will be called from every widget which needs a localized text
-  String translate(String key) {
-    return _localizedStrings[key] ?? key;
-  }
-  
-  // Load translations from JSON files
-  Future<Map<String, String>> _loadTranslations(String languageCode) async {
-    Map<String, String> translations = {};
-    
-    // Default to English if the language is not supported
-    String code = ['en', 'ta', 'hi', 'te', 'kn', 'ur'].contains(languageCode) ? languageCode : 'en';
-    
-    switch (code) {
-      case 'en':
-        translations = _englishTranslations;
-        break;
-      case 'ta':
-        translations = _tamilTranslations;
-        break;
-      case 'hi':
-        translations = _hindiTranslations;
-        break;
-      case 'te':
-        translations = _teluguTranslations;
-        break;
-      case 'kn':
-        translations = _kannadaTranslations;
-        break;
-      case 'ur':
-        translations = _urduTranslations;
-        break;
-      default:
-        translations = _englishTranslations;
-    }
-    
-    return translations;
-  }
-  
-  // English translations
-  final Map<String, String> _englishTranslations = {
+  // Default English translations for common UI elements
+  static final Map<String, String> _defaultEnglishTranslations = {
     'app_name': 'Nanjundeshwara Stores',
     'login': 'Login',
     'logout': 'Logout',
@@ -253,758 +159,230 @@ class AppLocalizations {
     'qr_code_not_available': 'QR Code not available',
     'contact_admin_for_payment_details': 'Please contact admin for payment details',
     'failed_to_submit_payment_request': 'Failed to submit payment request',
-  },
+  };
   
-  // Tamil translations
-  final Map<String, String> _tamilTranslations = {
-    'app_name': 'நஞ்சுண்டேஸ்வரா ஸ்டோர்ஸ்',
-    'login': 'உள்நுழைக',
-    'logout': 'வெளியேறு',
-    'user_id': 'பயனர் ஐடி',
-    'phone_number': 'தொலைபேசி எண்',
-    'invalid_credentials': 'தவறான சான்றுகள். மீண்டும் முயற்சிக்கவும்.',
-    'login_failed': 'உள்நுழைவு தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.',
-    'error_occurred': 'பிழை ஏற்பட்டது. பிறகு மீண்டும் முயற்சிக்கவும்.',
-    'welcome': 'வரவேற்கிறோம்',
-    'actions': 'செயல்கள்',
-    'categories': 'வகைகள்',
-    'view_more': 'மேலும் காண',
-    'products': 'பொருட்கள்',
-    'address': 'முகவரி',
-    'directions': 'திசைகள்',
-    'call': 'அழைப்பு',
-    'admin_dashboard': 'நிர்வாக டாஷ்போர்டு',
-    'operations': 'செயல்பாடுகள்',
-    'pending_payments': 'நிலுவையில் உள்ள கட்டணங்கள்',
-    'trash': 'குப்பை',
-    'add_user': 'பயனரைச் சேர்க்கவும்',
-    'delete_user': 'பயனரை நீக்கு',
-    'view_all_users': 'அனைத்து பயனர்களையும் காண்க',
-    'add_payment': 'கட்டணம் சேர்க்கவும்',
-    'view_payments': 'கட்டணங்களைக் காண்க',
-    'view_payments_by_month': 'மாதத்தின்படி கட்டணங்களைக் காண்க',
-    'search_by_village': 'கிராமத்தால் தேடுங்கள்',
-    'inactive_customers': 'செயலற்ற வாடிக்கையாளர்கள்',
-    'name': 'பெயர்',
-    'village': 'கிராமம்',
-    'category': 'வகை',
-    'amount': 'தொகை',
-    'month': 'மாதம்',
-    'search_users': 'பயனர்களைத் தேடுங்கள்',
-    'total_users': 'மொத்த பயனர்கள்',
-    'refresh_users_list': 'பயனர்கள் பட்டியலைப் புதுப்பிக்கவும்',
-    'move_user_to_trash': 'பயனரை குப்பைக்கு நகர்த்தவும்',
-    'confirm_deletion': 'நீக்குதலை உறுதிப்படுத்தவும்',
-    'are_you_sure_delete': 'இந்த பயனரை குப்பைக்கு நகர்த்த விரும்புகிறீர்களா?',
-    'user_details': 'பயனர் விவரங்கள்',
-    'cancel': 'ரத்து செய்',
-    'move_to_trash': 'குப்பைக்கு நகர்த்து',
-    'user_moved_to_trash': 'பயனர் வெற்றிகரமாக குப்பைக்கு நகர்த்தப்பட்டார்',
-    'failed_to_delete_user': 'பயனரை நீக்க முடியவில்லை',
-    'payment_history': 'கட்டண வரலாறு',
-    'no_payments_found': 'கட்டணங்கள் எதுவும் கிடைக்கவில்லை.',
-    'make_payment': 'கட்டணம் செலுத்துங்கள்',
-    'transaction_id': 'பரிவர்த்தனை ஐடி',
-    'submit_payment': 'கட்டணத்தைச் சமர்ப்பிக்கவும்',
-    'payment_request_submitted': 'கட்டண கோரிக்கை வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது',
-    'payment_already_made': 'மாதம் {month}க்கான கட்டணம் ஏற்கனவே செலுத்தப்பட்டுள்ளது.',
-    'please_enter_transaction_id': 'பரிவர்த்தனை ஐடியை உள்ளிடவும்',
-    'no_deleted_users_found': 'நீக்கப்பட்ட பயனர்கள் எவரும் கிடைக்கவில்லை',
-    'restore_user': 'பயனரை மீட்டெடுக்கவும்',
-    'delete_permanently': 'நிரந்தரமாக நீக்கு',
-    'permanently_delete_user': 'பயனரை நிரந்தரமாக நீக்கு',
-    'are_you_sure_permanent_delete': '{name} (ஐடி: {id}) ஐ நிரந்தரமாக நீக்க விரும்புகிறீர்களா? இந்த செயலை செயல்தவிர்க்க முடியாது.',
-    'user_restored': 'பயனர் வெற்றிகரமாக மீட்டெடுக்கப்பட்டார்',
-    'user_permanently_deleted': 'பயனர் நிரந்தரமாக நீக்கப்பட்டார்',
-    'no_pending_payment_requests': 'நிலுவையில் உள்ள கட்டண கோரிக்கைகள் இல்லை.',
-    'language': 'மொழி',
-    'select_language': 'மொழியைத் தேர்ந்தெடுக்கவும்',
-    'english': 'ஆங்கிலம்',
-    'tamil': 'தமிழ்',
-    'hindi': 'இந்தி',
-    'telugu': 'தெலுங்கு',
-    'kannada': 'கன்னடம்',
-    'urdu': 'உருது',
-    'language_settings': 'மொழி அமைப்புகள்',
-    'language_updated': 'மொழி வெற்றிகரமாக புதுப்பிக்கப்பட்டது',
-    'service_description': 'பல்வேறு வகைகளைக் கொண்ட தீபாவளி சீட்டுகளில் சிறப்பு.',
-    'nanjappan': 'நஞ்சப்பன்',
-    'suselamma': 'சுசேலம்மா',
-    'honoured': 'கௌரவிக்கப்பட்டவர்',
-    'owner': 'உரிமையாளர்',
-    'location_permission_denied': 'இருப்பிட அனுமதி மறுக்கப்பட்டது',
-    'location_permission_permanently_denied': 'இருப்பிட அனுமதிகள் நிரந்தரமாக மறுக்கப்பட்டுள்ளன, அமைப்புகளில் இயக்கவும்',
-    'could_not_open_maps': 'வரைபடங்களைத் திறக்க முடியவில்லை',
-    'error_opening_maps': 'வரைபடங்களைத் திறப்பதில் பிழை',
-    'cannot_open_phone_dialer': 'தொலைபேசி டயலரைத் திறக்க முடியாது',
-    'error_making_phone_call': 'தொலைபேசி அழைப்பை ஏற்படுத்துவதில் பிழை',
-    'gold_category': 'தங்கம்',
-    'silver_category': 'வெள்ளி',
-    'bronze_category': 'வெண்கலம்',
-    'per_month': 'மாதத்திற்கு',
-    'rice': 'அரிசி',
-    'maida': 'மைதா',
-    'oil': 'எண்ணெய்',
-    'wheat_flour': 'கோதுமை மாவு',
-    'white_dhall': 'வெள்ளை துவரம் பருப்பு',
-    'rice_raw': 'பச்சரிசி',
-    'semiya': 'சேமியா',
-    'payasam_mix': 'பாயாசம் கலவை',
-    'sugar': 'சர்க்கரை',
-    'sesame_oil': 'நல்லெண்ணெய்',
-    'tamarind': 'புளி',
-    'dry_chilli': 'காய்ந்த மிளகாய்',
-    'coriander_seeds': 'கொத்தமல்லி விதைகள்',
-    'salt': 'உப்பு',
-    'jaggery': 'வெல்லம்',
-    'pattasu_box': 'பட்டாசு பெட்டி',
-    'matches_box': 'தீப்பெட்டி',
-    'turmeric_powder': 'மஞ்சள் தூள்',
-    'kumkum': 'குங்குமம்',
-    'camphor': 'கற்பூரம்',
-    'pack': 'பேக்',
-    'box': 'பெட்டி',
-    'liters': 'லிட்டர்கள்',
-    'liter': 'லிட்டர்',
-    'grams': 'கிராம்கள்',
-    'pieces': 'துண்டுகள்',
-    'please_enter_user_id': 'உங்கள் பயனர் ஐடியை உள்ளிடவும்',
-    'please_enter_phone_number': 'உங்கள் தொலைபேசி எண்ணை உள்ளிடவும்',
-    'please_enter_user_id_to_delete': 'நீக்க பயனர் ஐடியை உள்ளிடவும்',
-    'please_enter_user_id_to_view_payments': 'கட்டணங்களைக் காண பயனர் ஐடியை உள்ளிடவும்',
-    'please_enter_month_to_view_payments': 'கட்டணங்களைக் காண மாதத்தை உள்ளிடவும்',
-    'please_enter_name': 'பெயரை உள்ளிடவும்',
-    'please_enter_village': 'கிராமத்தை உள்ளிடவும்',
-    'please_enter_amount': 'தொகையை உள்ளிடவும்',
-    'please_enter_month': 'மாதத்தை உள்ளிடவும்',
-    'please_select_village': 'கிராமத்தைத் தேர்ந்தெடுக்கவும்',
-    'search': 'தேடு',
-    'customers_in': 'வாடிக்கையாளர்கள்',
-    'refresh_inactive_customers': 'செயலற்ற வாடிக்கையாளர்களைப் புதுப்பிக்கவும்',
-    'last_payment': 'கடைசி கட்டணம்',
-    'admin_operations': 'நிர்வாக செயல்பாடுகள்',
-    'add_user': 'பயனரைச் சேர்க்கவும்',
-    'user_dashboard': 'பயனர் டாஷ்போர்டு',
-    'notifications': 'அறிவிப்புகள்',
-    'no_notifications': 'அறிவிப்புகள் இல்லை',
-    'payment_approved': 'கட்டணம் வெற்றிகரமாக அங்கீகரிக்கப்பட்டது',
-    'payment_rejected': 'கட்டணம் வெற்றிகரமாக நிராகரிக்கப்பட்டது',
-    'approve': 'அங்கீகரிக்கவும்',
-    'reject': 'நிராகரிக்கவும்',
-    'month_format': 'மாதம் (எ.கா., ஜனவரிக்கு 01)',
-    'paid': 'செலுத்தப்பட்டது',
-    'unpaid': 'செலுத்தப்படவில்லை',
-    'no_paid_users': 'இந்த மாதத்திற்கு கட்டணம் செலுத்திய பயனர்கள் இல்லை',
-    'no_unpaid_users': 'இந்த மாதத்திற்கு கட்டணம் செலுத்தாத பயனர்கள் இல்லை',
-    'payments': 'கட்டணங்கள்',
-    'user': 'பயனர்',
-    'deleted_on': 'நீக்கப்பட்ட தேதி',
-    'qr_code_not_available': 'QR குறியீடு கிடைக்கவில்லை',
-    'contact_admin_for_payment_details': 'கட்டண விவரங்களுக்கு நிர்வாகியைத் தொடர்பு கொள்ளவும்',
-    'failed_to_submit_payment_request': 'கட்டண கோரிக்கையைச் சமர்ப்பிக்க முடியவில்லை',
-  },
+  AppLocalizations(this.locale);
   
-  // Hindi translations
-  final Map<String, String> _hindiTranslations = {
-    'app_name': 'नंजुंदेश्वरा स्टोर्स',
-    'login': 'लॉगिन',
-    'logout': 'लॉगआउट',
-    'user_id': 'यूजर आईडी',
-    'phone_number': 'फोन नंबर',
-    'invalid_credentials': 'अमान्य क्रेडेंशियल्स। कृपया पुनः प्रयास करें।',
-    'login_failed': 'लॉगिन विफल। कृपया पुनः प्रयास करें।',
-    'error_occurred': 'एक त्रुटि हुई। कृपया बाद में पुनः प्रयास करें।',
-    'welcome': 'स्वागत है',
-    'actions': 'कार्रवाई',
-    'categories': 'श्रेणियाँ',
-    'view_more': 'और देखें',
-    'products': 'उत्पाद',
-    'address': 'पता',
-    'directions': 'दिशाएँ',
-    'call': 'कॉल',
-    'admin_dashboard': 'एडमिन डैशबोर्ड',
-    'operations': 'संचालन',
-    'pending_payments': 'लंबित भुगतान',
-    'trash': 'ट्रैश',
-    'add_user': 'उपयोगकर्ता जोड़ें',
-    'delete_user': 'उपयोगकर्ता हटाएं',
-    'view_all_users': 'सभी उपयोगकर्ताओं को देखें',
-    'add_payment': 'भुगतान जोड़ें',
-    'view_payments': 'भुगतान देखें',
-    'view_payments_by_month': 'महीने के अनुसार भुगतान देखें',
-    'search_by_village': 'गांव के अनुसार खोजें',
-    'inactive_customers': 'निष्क्रिय ग्राहक',
-    'name': 'नाम',
-    'village': 'गांव',
-    'category': 'श्रेणी',
-    'amount': 'राशि',
-    'month': 'महीना',
-    'search_users': 'उपयोगकर्ताओं को खोजें',
-    'total_users': 'कुल उ  राशि',
-    'month': 'महीना',
-    'search_users': 'उपयोगकर्ताओं को खोजें',
-    'total_users': 'कुल उपयोगकर्ता',
-    'refresh_users_list': 'उपयोगकर्ता सूची को रिफ्रेश करें',
-    'move_user_to_trash': 'उपयोगकर्ता को ट्रैश में ले जाएं',
-    'confirm_deletion': 'हटाने की पुष्टि करें',
-    'are_you_sure_delete': 'क्या आप वाकई इस उपयोगकर्ता को ट्रैश में ले जाना चाहते हैं?',
-    'user_details': 'उपयोगकर्ता विवरण',
-    'cancel': 'रद्द करें',
-    'move_to_trash': 'ट्रैश में ले जाएं',
-    'user_moved_to_trash': 'उपयोगकर्ता सफलतापूर्वक ट्रैश में ले जाया गया',
-    'failed_to_delete_user': 'उपयोगकर्ता को हटाने में विफल',
-    'payment_history': 'भुगतान इतिहास',
-    'no_payments_found': 'कोई भुगतान नहीं मिला।',
-    'make_payment': 'भुगतान करें',
-    'transaction_id': 'लेनदेन आईडी',
-    'submit_payment': 'भुगतान जमा करें',
-    'payment_request_submitted': 'भुगतान अनुरोध सफलतापूर्वक जमा किया गया',
-    'payment_already_made': 'महीने {month} के लिए भुगतान पहले ही किया जा चुका है।',
-    'please_enter_transaction_id': 'कृपया एक लेनदेन आईडी दर्ज करें',
-    'no_deleted_users_found': 'कोई हटाए गए उपयोगकर्ता नहीं मिले',
-    'restore_user': 'उपयोगकर्ता को पुनर्स्थापित करें',
-    'delete_permanently': 'स्थायी रूप से हटाएं',
-    'permanently_delete_user': 'उपयोगकर्ता को स्थायी रूप से हटाएं',
-    'are_you_sure_permanent_delete': 'क्या आप वाकई {name} (आईडी: {id}) को स्थायी रूप से हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।',
-    'user_restored': 'उपयोगकर्ता सफलतापूर्वक पुनर्स्थापित किया गया',
-    'user_permanently_deleted': 'उपयोगकर्ता स्थायी रूप से हटा दिया गया',
-    'no_pending_payment_requests': 'कोई लंबित भुगतान अनुरोध नहीं।',
-    'language': 'भाषा',
-    'select_language': 'भाषा चुनें',
-    'english': 'अंग्रेज़ी',
-    'tamil': 'तमिल',
-    'hindi': 'हिंदी',
-    'telugu': 'तेलुगु',
-    'kannada': 'कन्नड़',
-    'urdu': 'उर्दू',
-    'language_settings': 'भाषा सेटिंग्स',
-    'language_updated': 'भाषा सफलतापूर्वक अपडेट की गई',
-    'service_description': 'विभिन्न श्रेणियों के साथ दीवाली चिट्स में विशेषज्ञता।',
-    'nanjappan': 'नंजप्पन',
-    'suselamma': 'सुसेलम्मा',
-    'honoured': 'सम्मानित',
-    'owner': 'मालिक',
-    'location_permission_denied': 'स्थान अनुमति अस्वीकृत',
-    'location_permission_permanently_denied': 'स्थान अनुमतियां स्थायी रूप से अस्वीकृत, कृपया सेटिंग्स में सक्षम करें',
-    'could_not_open_maps': 'मानचित्र नहीं खोल सका',
-    'error_opening_maps': 'मानचित्र खोलने में त्रुटि',
-    'cannot_open_phone_dialer': 'फोन डायलर नहीं खोल सकता',
-    'error_making_phone_call': 'फोन कॉल करने में त्रुटि',
-    'gold_category': 'स्वर्ण',
-    'silver_category': 'रजत',
-    'bronze_category': 'कांस्य',
-    'per_month': 'प्रति माह',
-    'rice': 'चावल',
-    'maida': 'मैदा',
-    'oil': 'तेल',
-    'wheat_flour': 'गेहूं का आटा',
-    'white_dhall': 'सफेद दाल',
-    'rice_raw': 'कच्चा चावल',
-    'semiya': 'सेमिया',
-    'payasam_mix': 'पायसम मिक्स',
-    'sugar': 'चीनी',
-    'sesame_oil': 'तिल का तेल',
-    'tamarind': 'इमली',
-    'dry_chilli': 'सूखी मिर्च',
-    'coriander_seeds': 'धनिया बीज',
-    'salt': 'नमक',
-    'jaggery': 'गुड़',
-    'pattasu_box': 'पटाखे का बॉक्स',
-    'matches_box': 'माचिस का डिब्बा',
-    'turmeric_powder': 'हल्दी पाउडर',
-    'kumkum': 'कुमकुम',
-    'camphor': 'कपूर',
-    'pack': 'पैक',
-    'box': 'बॉक्स',
-    'liters': 'लीटर',
-    'liter': 'लीटर',
-    'grams': 'ग्राम',
-    'pieces': 'टुकड़े',
-    'please_enter_user_id': 'कृपया अपनी यूजर आईडी दर्ज करें',
-    'please_enter_phone_number': 'कृपया अपना फोन नंबर दर्ज करें',
-    'please_enter_user_id_to_delete': 'कृपया हटाने के लिए एक यूजर आईडी दर्ज करें',
-    'please_enter_user_id_to_view_payments': 'भुगतान देखने के लिए कृपया एक यूजर आईडी दर्ज करें',
-    'please_enter_month_to_view_payments': 'भुगतान देखने के लिए कृपया एक महीना दर्ज करें',
-    'please_enter_name': 'कृपया एक नाम दर्ज करें',
-    'please_enter_village': 'कृपया एक गांव दर्ज करें',
-    'please_enter_amount': 'कृपया एक राशि दर्ज करें',
-    'please_enter_month': 'कृपया एक महीना दर्ज करें',
-    'please_select_village': 'कृपया एक गांव चुनें',
-    'search': 'खोज',
-    'customers_in': 'ग्राहक',
-    'refresh_inactive_customers': 'निष्क्रिय ग्राहकों को रिफ्रेश करें',
-    'last_payment': 'अंतिम भुगतान',
-    'admin_operations': 'एडमिन संचालन',
-    'add_user': 'उपयोगकर्ता जोड़ें',
-    'user_dashboard': 'उपयोगकर्ता डैशबोर्ड',
-    'notifications': 'सूचनाएं',
-    'no_notifications': 'कोई सूचना नहीं',
-    'payment_approved': 'भुगतान सफलतापूर्वक स्वीकृत किया गया',
-    'payment_rejected': 'भुगतान सफलतापूर्वक अस्वीकृत किया गया',
-    'approve': 'स्वीकृत करें',
-    'reject': 'अस्वीकार करें',
-    'month_format': 'महीना (उदा., जनवरी के लिए 01)',
-    'paid': 'भुगतान किया गया',
-    'unpaid': 'भुगतान नहीं किया गया',
-    'no_paid_users': 'इस महीने के लिए कोई भुगतान किए गए उपयोगकर्ता नहीं हैं',
-    'no_unpaid_users': 'इस महीने के लिए कोई भुगतान न किए गए उपयोगकर्ता नहीं हैं',
-    'payments': 'भुगतान',
-    'user': 'उपयोगकर्ता',
-    'deleted_on': 'हटाया गया',
-    'qr_code_not_available': 'QR कोड उपलब्ध नहीं है',
-    'contact_admin_for_payment_details': 'भुगतान विवरण के लिए कृपया एडमिन से संपर्क करें',
-    'failed_to_submit_payment_request': 'भुगतान अनुरोध जमा करने में विफल',
-  },
+  // Helper method to keep the code in the widgets concise
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
   
-  // Telugu translations
-  final Map<String, String> _teluguTranslations = {
-    'app_name': 'నంజుందేశ్వర స్టోర్స్',
-    'login': 'లాగిన్',
-    'logout': 'లాగౌట్',
-    'user_id': 'యూజర్ ఐడి',
-    'phone_number': 'ఫోన్ నంబర్',
-    'invalid_credentials': 'చెల్లని ఆధారాలు. దయచేసి మళ్ళీ ప్రయత్నించండి.',
-    'login_failed': 'లాగిన్ విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.',
-    'error_occurred': 'లోపం సంభవించింది. దయచేసి తర్వాత మళ్ళీ ప్రయత్నించండి.',
-    'welcome': 'స్వాగతం',
-    'actions': 'చర్యలు',
-    'categories': 'వర్గాలు',
-    'view_more': 'మరింత చూడండి',
-    'products': 'ఉత్పత్తులు',
-    'address': 'చిరునామా',
-    'directions': 'దిశలు',
-    'call': 'కాల్',
-    'admin_dashboard': 'అడ్మిన్ డాష్‌బోర్డ్',
-    'operations': 'కార్యకలాపాలు',
-    'pending_payments': 'పెండింగ్ చెల్లింపులు',
-    'trash': 'ట్రాష్',
-    'add_user': 'వినియోగదారుని జోడించండి',
-    'delete_user': 'వినియోగదారుని తొలగించండి',
-    'view_all_users': 'అన్ని వినియోగదారులను చూడండి',
-    'add_payment': 'చెల్లింపు జోడించండి',
-    'view_payments': 'చెల్లింపులను చూడండి',
-    'view_payments_by_month': 'నెల వారీగా చెల్లింపులను చూడండి',
-    'search_by_village': 'గ్రామం ద్వారా శోధించండి',
-    'inactive_customers': 'నిష్క్రియ వినియోగదారులు',
-    'name': 'పేరు',
-    'village': 'గ్రామం',
-    'category': 'వర్గం',
-    'amount': 'మొత్తం',
-    'month': 'నెల',
-    'search_users': 'వినియోగదారులను శోధించండి',
-    'total_users': 'మొత్తం వినియోగదారులు',
-    'refresh_users_list': 'వినియోగదారుల జాబితాను రిఫ్రెష్ చేయండి',
-    'move_user_to_trash': 'వినియోగదారుని ట్రాష్‌కి తరలించండి',
-    'confirm_deletion': 'తొలగింపును నిర్ధారించండి',
-    'are_you_sure_delete': 'మీరు ఖచ్చితంగా ఈ వినియోగదారుని ట్రాష్‌కి తరలించాలనుకుంటున్నారా?',
-    'user_details': 'వినియోగదారు వివరాలు',
-    'cancel': 'రద్దు చేయండి',
-    'move_to_trash': 'ట్రాష్‌కి తరలించండి',
-    'user_moved_to_trash': 'వినియోగదారు విజయవంతంగా ట్రాష్‌కి తరలించబడ్డారు',
-    'failed_to_delete_user': 'వినియోగదారుని తొలగించడం విఫలమైంది',
-    'payment_history': 'చెల్లింపు చరిత్ర',
-    'no_payments_found': 'చెల్లింపులు కనుగొనబడలేదు.',
-    'make_payment': 'చెల్లింపు చేయండి',
-    'transaction_id': 'లావాదేవీ ఐడి',
-    'submit_payment': 'చెల్లింపును సమర్పించండి',
-    'payment_request_submitted': 'చెల్లింపు అభ్యర్థన విజయవంతంగా సమర్పించబడింది',
-    'payment_already_made': 'నెల {month} కోసం చెల్లింపు ఇప్పటికే చేయబడింది.',
-    'please_enter_transaction_id': 'దయచేసి లావాదేవీ ఐడిని నమోదు చేయండి',
-    'no_deleted_users_found': 'తొలగించబడిన వినియోగదారులు కనుగొనబడలేదు',
-    'restore_user': 'వినియోగదారుని పునరుద్ధరించండి',
-    'delete_permanently': 'శాశ్వతంగా తొలగించండి',
-    'permanently_delete_user': 'వినియోగదారుని శాశ్వతంగా తొలగించండి',
-    'are_you_sure_permanent_delete': 'మీరు ఖచ్చితంగా {name} (ఐడి: {id})ని శాశ్వతంగా తొలగించాలనుకుంటున్నారా? ఈ చర్యను రద్దు చేయలేరు.',
-    'user_restored': 'వినియోగదారు విజయవంతంగా పునరుద్ధరించబడ్డారు',
-    'user_permanently_deleted': 'వినియోగదారు శాశ్వతంగా తొలగించబడ్డారు',
-    'no_pending_payment_requests': 'పెండింగ్ చెల్లింపు అభ్యర్థనలు లేవు.',
-    'language': 'భాష',
-    'select_language': 'భాషను ఎంచుకోండి',
-    'english': 'ఆంగ్లం',
-    'tamil': 'తమిళం',
-    'hindi': 'హిందీ',
-    'telugu': 'తెలుగు',
-    'kannada': 'కన్నడ',
-    'urdu': 'ఉర్దూ',
-    'language_settings': 'భాషా సెట్టింగ్‌లు',
-    'language_updated': 'భాష విజయవంతంగా నవీకరించబడింది',
-    'service_description': 'వివిధ వర్గాలతో దీపావళి చిట్స్‌లో ప్రత్యేకత.',
-    'nanjappan': 'నంజప్పన్',
-    'suselamma': 'సుసేలమ్మ',
-    'honoured': 'గౌరవించబడిన',
-    'owner': 'యజమాని',
-    'location_permission_denied': 'స్థాన అనుమతి నిరాకరించబడింది',
-    'location_permission_permanently_denied': 'స్థాన అనుమతులు శాశ్వతంగా నిరాకరించబడ్డాయి, దయచేసి సెట్టింగ్‌లలో ప్రారంభించండి',
-    'could_not_open_maps': 'మ్యాప్‌లను తెరవడం సాధ్యం కాలేదు',
-    'error_opening_maps': 'మ్యాప్‌లను తెరవడంలో లోపం',
-    'cannot_open_phone_dialer': 'ఫోన్ డయలర్‌ను తెరవలేరు',
-    'error_making_phone_call': 'ఫోన్ కాల్ చేయడంలో లోపం',
-    'gold_category': 'బంగారం',
-    'silver_category': 'వెండి',
-    'bronze_category': 'కంచు',
-    'per_month': 'నెలకు',
-    'rice': 'బియ్యం',
-    'maida': 'మైదా',
-    'oil': 'నూనె',
-    'wheat_flour': 'గోధుమ పిండి',
-    'white_dhall': 'తెల్ల కందిపప్పు',
-    'rice_raw': 'పచ్చి బియ్యం',
-    'semiya': 'సేమియా',
-    'payasam_mix': 'పాయసం మిక్స్',
-    'sugar': 'పంచదార',
-    'sesame_oil': 'నువ్వుల నూనె',
-    'tamarind': 'చింతపండు',
-    'dry_chilli': 'ఎండు మిరపకాయలు',
-    'coriander_seeds': 'కొత్తిమీర గింజలు',
-    'salt': 'ఉప్పు',
-    'jaggery': 'బెల్లం',
-    'pattasu_box': 'పటాసు పెట్టె',
-    'matches_box': 'అగ్గిపెట్టె',
-    'turmeric_powder': 'పసుపు పొడి',
-    'kumkum': 'కుంకుమ',
-    'camphor': 'కర్పూరం',
-    'pack': 'ప్యాక్',
-    'box': 'పెట్టె',
-    'liters': 'లీటర్లు',
-    'liter': 'లీటర్',
-    'grams': 'గ్రాములు',
-    'pieces': 'ముక్కలు',
-    'please_enter_user_id': 'దయచేసి మీ యూజర్ ఐడిని నమోదు చేయండి',
-    'please_enter_phone_number': 'దయచేసి మీ ఫోన్ నంబర్‌ను నమోదు చేయండి',
-    'please_enter_user_id_to_delete': 'దయచేసి తొలగించడానికి యూజర్ ఐడిని నమోదు చేయండి',
-    'please_enter_user_id_to_view_payments': 'చెల్లింపులను చూడటానికి దయచేసి యూజర్ ఐడిని నమోదు చేయండి',
-    'please_enter_month_to_view_payments': 'చెల్లింపులను చూడటానికి దయచేసి నెలను నమోదు చేయండి',
-    'please_enter_name': 'దయచేసి పేరును నమోదు చేయండి',
-    'please_enter_village': 'దయచేసి గ్రామాన్ని నమోదు చేయండి',
-    'please_enter_amount': 'దయచేసి మొత్తాన్ని నమోదు చేయండి',
-    'please_enter_month': 'దయచేసి నెలను నమోదు చేయండి',
-    'please_select_village': 'దయచేసి గ్రామాన్ని ఎంచుకోండి',
-    'search': 'శోధించండి',
-    'customers_in': 'వినియోగదారులు',
-    'refresh_inactive_customers': 'నిష్క్రియ వినియోగదారులను రిఫ్రెష్ చేయండి',
-    'last_payment': 'చివరి చెల్లింపు',
-    'admin_operations': 'అడ్మిన్ కార్యకలాపాలు',
-    'add_user': 'వినియోగదారుని జోడించండి',
-    'user_dashboard': 'వినియోగదారు డాష్‌బోర్డ్',
-    'notifications': 'నోటిఫికేషన్లు',
-    'no_notifications': 'నోటిఫికేషన్లు లేవు',
-    'payment_approved': 'చెల్లింపు విజయవంతంగా ఆమోదించబడింది',
-    'payment_rejected': 'చెల్లింపు విజయవంతంగా తిరస్కరించబడింది',
-    'approve': 'ఆమోదించండి',
-    'reject': 'తిరస్కరించండి',
-    'month_format': 'నెల (ఉదా., జనవరి కోసం 01)',
-    'paid': 'చెల్లించబడింది',
-    'unpaid': 'చెల్లించబడలేదు',
-    'no_paid_users': 'ఈ నెలకు చెల్లించిన వినియోగదారులు లేరు',
-    'no_unpaid_users': 'ఈ నెలకు చెల్లించని వినియోగదారులు లేరు',
-    'payments': 'చెల్లింపులు',
-    'user': 'వినియోగదారు',
-    'deleted_on': 'తొలగించబడిన తేదీ',
-    'qr_code_not_available': 'QR కోడ్ అందుబాటులో లేదు',
-    'contact_admin_for_payment_details': 'చెల్లింపు వివరాల కోసం దయచేసి అడ్మిన్‌ను సంప్రదించండి',
-    'failed_to_submit_payment_request': 'చెల్లింపు అభ్యర్థనను సమర్పించడం విఫలమైంది',
-  },
+  // Static member to have a simple access to the delegate from the MaterialApp
+  static const LocalizationsDelegate<AppLocalizations> delegate = AppLocalizationsDelegate();
   
-  // Kannada translations
-  final Map<String, String> _kannadaTranslations = {
-    'app_name': 'ನಂಜುಂದೇಶ್ವರ ಸ್ಟೋರ್ಸ್',
-    'login': 'ಲಾಗಿನ್',
-    'logout': 'ಲಾಗ್ಔಟ್',
-    'user_id': 'ಬಳಕೆದಾರ ಐಡಿ',
-    'phone_number': 'ಫೋನ್ ನಂಬರ್',
-    'invalid_credentials': 'ಅಮಾನ್ಯ ರುಜುವಾತುಗಳು. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
-    'login_failed': 'ಲಾಗಿನ್ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
-    'error_occurred': 'ದೋಷ ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
-    'welcome': 'ಸ್ವಾಗತ',
-    'actions': 'ಕ್ರಿಯೆಗಳು',
-    'categories': 'ವರ್ಗಗಳು',
-    'view_more': 'ಇನ್ನಷ್ಟು ನೋಡಿ',
-    'products': 'ಉತ್ಪನ್ನಗಳು',
-    'address': 'ವಿಳಾಸ',
-    'directions': 'ದಿಕ್ಕುಗಳು',
-    'call': 'ಕರೆ',
-    'admin_dashboard': 'ನಿರ್ವಾಹಕ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್',
-    'operations': 'ಕಾರ್ಯಾಚರಣೆಗಳು',
-    'pending_payments': 'ಬಾಕಿ ಪಾವತಿಗಳು',
-    'trash': 'ಕಸ',
-    'add_user': 'ಬಳಕೆದಾರರನ್ನು ಸೇರಿಸಿ',
-    'delete_user': 'ಬಳಕೆದಾರರನ್ನು ಅಳಿಸಿ',
-    'view_all_users': 'ಎಲ್ಲಾ ಬಳಕೆದಾರರನ್ನು ವೀಕ್ಷಿಸಿ',
-    'add_payment': 'ಪಾವತಿ ಸೇರಿಸಿ',
-    'view_payments': 'ಪಾವತಿಗಳನ್ನು ವೀಕ್ಷಿಸಿ',
-    'view_payments_by_month': 'ತಿಂಗಳಿನ ಪ್ರಕಾರ ಪಾವತಿಗಳನ್ನು ವೀಕ್ಷಿಸಿ',
-    'search_by_village': 'ಗ್ರಾಮದ ಮೂಲಕ ಹುಡುಕಿ',
-    'inactive_customers': 'ನಿಷ್ಕ್ರಿಯ ಗ್ರಾಹಕರು',
-    'name': 'ಹೆಸರು',
-    'village': 'ಗ್ರಾಮ',
-    'category': 'ವರ್ಗ',
-    'amount': 'ಮೊತ್ತ',
-    'month': 'ತಿ  ಹೆಸರು',
-    'village': 'ಗ್ರಾಮ',
-    'category': 'ವರ್ಗ',
-    'amount': 'ಮೊತ್ತ',
-    'month': 'ತಿಂಗಳು',
-    'search_users': 'ಬಳಕೆದಾರರನ್ನು ಹುಡುಕಿ',
-    'total_users': 'ಒಟ್ಟು ಬಳಕೆದಾರರು',
-    'refresh_users_list': 'ಬಳಕೆದಾರರ ಪಟ್ಟಿಯನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ',
-    'move_user_to_trash': 'ಬಳಕೆದಾರರನ್ನು ಕಸಕ್ಕೆ ಸರಿಸಿ',
-    'confirm_deletion': 'ಅಳಿಸುವಿಕೆಯನ್ನು ದೃಢೀಕರಿಸಿ',
-    'are_you_sure_delete': 'ನೀವು ಖಚಿತವಾಗಿ ಈ ಬಳಕೆದಾರರನ್ನು ಕಸಕ್ಕೆ ಸರಿಸಲು ಬಯಸುವಿರಾ?',
-    'user_details': 'ಬಳಕೆದಾರರ ವಿವರಗಳು',
-    'cancel': 'ರದ್ದುಮಾಡಿ',
-    'move_to_trash': 'ಕಸಕ್ಕೆ ಸರಿಸಿ',
-    'user_moved_to_trash': 'ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಕಸಕ್ಕೆ ಸರಿಸಲಾಗಿದೆ',
-    'failed_to_delete_user': 'ಬಳಕೆದಾರರನ್ನು ಅಳಿಸಲು ವಿಫಲವಾಗಿದೆ',
-    'payment_history': 'ಪಾವತಿ ಇತಿಹಾಸ',
-    'no_payments_found': 'ಯಾವುದೇ ಪಾವತಿಗಳು ಕಂಡುಬಂದಿಲ್ಲ.',
-    'make_payment': 'ಪಾವತಿ ಮಾಡಿ',
-    'transaction_id': 'ವಹಿವಾಟು ಐಡಿ',
-    'submit_payment': 'ಪಾವತಿಯನ್ನು ಸಲ್ಲಿಸಿ',
-    'payment_request_submitted': 'ಪಾವತಿ ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ',
-    'payment_already_made': 'ತಿಂಗಳು {month} ಗೆ ಪಾವತಿಯನ್ನು ಈಗಾಗಲೇ ಮಾಡಲಾಗಿದೆ.',
-    'please_enter_transaction_id': 'ದಯವಿಟ್ಟು ವಹಿವಾಟು ಐಡಿಯನ್ನು ನಮೂದಿಸಿ',
-    'no_deleted_users_found': 'ಅಳಿಸಲಾದ ಬಳಕೆದಾರರು ಯಾರೂ ಕಂಡುಬಂದಿಲ್ಲ',
-    'restore_user': 'ಬಳಕೆದಾರರನ್ನು ಮರುಸ್ಥಾಪಿಸಿ',
-    'delete_permanently': 'ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ',
-    'permanently_delete_user': 'ಬಳಕೆದಾರರನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಿ',
-    'are_you_sure_permanent_delete': 'ನೀವು ಖಚಿತವಾಗಿ {name} (ಐಡಿ: {id}) ಅನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲು ಬಯಸುವಿರಾ? ಈ ಕ್ರಿಯೆಯನ್ನು ರದ್ದುಗೊಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.',
-    'user_restored': 'ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ',
-    'user_permanently_deleted': 'ಬಳಕೆದಾರರನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲಾಗಿದೆ',
-    'no_pending_payment_requests': 'ಯಾವುದೇ ಬಾಕಿ ಪಾವತಿ ವಿನಂತಿಗಳಿಲ್ಲ.',
-    'language': 'ಭಾಷೆ',
-    'select_language': 'ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
-    'english': 'ಇಂಗ್ಲಿಷ್',
-    'tamil': 'ತಮಿಳು',
-    'hindi': 'ಹಿಂದಿ',
-    'telugu': 'ತೆಲುಗು',
-    'kannada': 'ಕನ್ನಡ',
-    'urdu': 'ಉರ್ದು',
-    'language_settings': 'ಭಾಷಾ ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
-    'language_updated': 'ಭಾಷೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ',
-    'service_description': 'ವಿವಿಧ ವರ್ಗಗಳೊಂದಿಗೆ ದೀಪಾವಳಿ ಚಿಟ್ಸ್‌ನಲ್ಲಿ ವಿಶೇಷತೆ.',
-    'nanjappan': 'ನಂಜಪ್ಪನ್',
-    'suselamma': 'ಸುಸೇಲಮ್ಮ',
-    'honoured': 'ಗೌರವಿಸಲಾಗಿದೆ',
-    'owner': 'ಮಾಲೀಕ',
-    'location_permission_denied': 'ಸ್ಥಳ ಅನುಮತಿ ನಿರಾಕರಿಸಲಾಗಿದೆ',
-    'location_permission_permanently_denied': 'ಸ್ಥಳ ಅನುಮತಿಗಳನ್ನು ಶಾಶ್ವತವಾಗಿ ನಿರಾಕರಿಸಲಾಗಿದೆ, ದಯವಿಟ್ಟು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸಕ್ರಿಯಗೊಳಿಸಿ',
-    'could_not_open_maps': 'ನಕ್ಷೆಗಳನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ',
-    'error_opening_maps': 'ನಕ್ಷೆಗಳನ್ನು ತೆರೆಯುವಲ್ಲಿ ದೋಷ',
-    'cannot_open_phone_dialer': 'ಫೋನ್ ಡಯಲರ್ ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ',
-    'error_making_phone_call': 'ಫೋನ್ ಕರೆ ಮಾಡುವಲ್ಲಿ ದೋಷ',
-    'gold_category': 'ಚಿನ್ನ',
-    'silver_category': 'ಬೆಳ್ಳಿ',
-    'bronze_category': 'ಕಂಚು',
-    'per_month': 'ಪ್ರತಿ ತಿಂಗಳು',
-    'rice': 'ಅಕ್ಕಿ',
-    'maida': 'ಮೈದಾ',
-    'oil': 'ಎಣ್ಣೆ',
-    'wheat_flour': 'ಗೋಧಿ ಹಿಟ್ಟು',
-    'white_dhall': 'ಬಿಳಿ ಬೇಳೆ',
-    'rice_raw': 'ಕಚ್ಚಾ ಅಕ್ಕಿ',
-    'semiya': 'ಸೇಮಿಯಾ',
-    'payasam_mix': 'ಪಾಯಸ ಮಿಶ್ರಣ',
-    'sugar': 'ಸಕ್ಕರೆ',
-    'sesame_oil': 'ಎಳ್ಳೆಣ್ಣೆ',
-    'tamarind': 'ಹುಣಸೆ',
-    'dry_chilli': 'ಒಣ ಮೆಣಸಿನಕಾಯಿ',
-    'coriander_seeds': 'ಕೊತ್ತಂಬರಿ ಬೀಜಗಳು',
-    'salt': 'ಉಪ್ಪು',
-    'jaggery': 'ಬೆಲ್ಲ',
-    'pattasu_box': 'ಪಟಾಕಿ ಪೆಟ್ಟಿಗೆ',
-    'matches_box': 'ಮ್ಯಾಚ್‌ಗಳ ಪೆಟ್ಟಿಗೆ',
-    'turmeric_powder': 'ಅರಿಶಿನ ಪುಡಿ',
-    'kumkum': 'ಕುಂಕುಮ',
-    'camphor': 'ಕರ್ಪೂರ',
-    'pack': 'ಪ್ಯಾಕ್',
-    'box': 'ಪೆಟ್ಟಿಗೆ',
-    'liters': 'ಲೀಟರ್‌ಗಳು',
-    'liter': 'ಲೀಟರ್',
-    'grams': 'ಗ್ರಾಂಗಳು',
-    'pieces': 'ತುಂಡುಗಳು',
-    'please_enter_user_id': 'ದಯವಿಟ್ಟು ನಿಮ್ಮ ಬಳಕೆದಾರ ಐಡಿಯನ್ನು ನಮೂದಿಸಿ',
-    'please_enter_phone_number': 'ದಯವಿಟ್ಟು ನಿಮ್ಮ ಫೋನ್ ನಂಬರ್ ನಮೂದಿಸಿ',
-    'please_enter_user_id_to_delete': 'ದಯವಿಟ್ಟು ಅಳಿಸಲು ಬಳಕೆದಾರ ಐಡಿಯನ್ನು ನಮೂದಿಸಿ',
-    'please_enter_user_id_to_view_payments': 'ಪಾವತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು ದಯವಿಟ್ಟು ಬಳಕೆದಾರ ಐಡಿಯನ್ನು ನಮೂದಿಸಿ',
-    'please_enter_month_to_view_payments': 'ಪಾವತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು ದಯವಿಟ್ಟು ತಿಂಗಳನ್ನು ನಮೂದಿಸಿ',
-    'please_enter_name': 'ದಯವಿಟ್ಟು ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
-    'please_enter_village': 'ದಯವಿಟ್ಟು ಗ್ರಾಮವನ್ನು ನಮೂದಿಸಿ',
-    'please_enter_amount': 'ದಯವಿಟ್ಟು ಮೊತ್ತವನ್ನು ನಮೂದಿಸಿ',
-    'please_enter_month': 'ದಯವಿಟ್ಟು ತಿಂಗಳನ್ನು ನಮೂದಿಸಿ',
-    'please_select_village': 'ದಯವಿಟ್ಟು ಗ್ರಾಮವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
-    'search': 'ಹುಡುಕಿ',
-    'customers_in': 'ಗ್ರಾಹಕರು',
-    'refresh_inactive_customers': 'ನಿಷ್ಕ್ರಿಯ ಗ್ರಾಹಕರನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ',
-    'last_payment': 'ಕೊನೆಯ ಪಾವತಿ',
-    'admin_operations': 'ನಿರ್ವಾಹಕ ಕಾರ್ಯಾಚರಣೆಗಳು',
-    'add_user': 'ಬಳಕೆದಾರರನ್ನು ಸೇರಿಸಿ',
-    'user_dashboard': 'ಬಳಕೆದಾರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್',
-    'notifications': 'ಅಧಿಸೂಚನೆಗಳು',
-    'no_notifications': 'ಯಾವುದೇ ಅಧಿಸೂಚನೆಗಳಿಲ್ಲ',
-    'payment_approved': 'ಪಾವತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಅನುಮೋದಿಸಲಾಗಿದೆ',
-    'payment_rejected': 'ಪಾವತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ',
-    'approve': 'ಅನುಮೋದಿಸಿ',
-    'reject': 'ತಿರಸ್ಕರಿಸಿ',
-    'month_format': 'ತಿಂಗಳು (ಉದಾ., ಜನವರಿಗೆ 01)',
-    'paid': 'ಪಾವತಿಸಲಾಗಿದೆ',
-    'unpaid': 'ಪಾವತಿಸಲಾಗಿಲ್ಲ',
-    'no_paid_users': 'ಈ ತಿಂಗಳಿಗೆ ಯಾವುದೇ ಪಾವತಿಸಿದ ಬಳಕೆದಾರರಿಲ್ಲ',
-    'no_unpaid_users': 'ಈ ತಿಂಗಳಿಗೆ ಯಾವುದೇ ಪಾವತಿಸದ ಬಳಕೆದಾರರಿಲ್ಲ',
-    'payments': 'ಪಾವತಿಗಳು',
-    'user': 'ಬಳಕೆದಾರ',
-    'deleted_on': 'ಅಳಿಸಿದ ದಿನಾಂಕ',
-    'qr_code_not_available': 'QR ಕೋಡ್ ಲಭ್ಯವಿಲ್ಲ',
-    'contact_admin_for_payment_details': 'ಪಾವತಿ ವಿವರಗಳಿಗಾಗಿ ದಯವಿಟ್ಟು ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಿ',
-    'failed_to_submit_payment_request': 'ಪಾವತಿ ವಿನಂತಿಯನ್ನು ಸಲ್ಲಿಸಲು ವಿಫಲವಾಗಿದೆ',
-  },
+  // List of supported languages
+  static final List<Locale> supportedLocales = [
+    const Locale('en', ''), // English
+    const Locale('ta', ''), // Tamil
+    const Locale('hi', ''), // Hindi
+    const Locale('te', ''), // Telugu
+    const Locale('kn', ''), // Kannada
+    const Locale('ur', ''), // Urdu
+  ];
   
-  // Urdu translations
-  final Map<String, String> _urduTranslations = {
-    'app_name': 'نجندیشورا اسٹورز',
-    'login': 'لاگ ان',
-    'logout': 'لاگ آؤٹ',
-    'user_id': 'صارف آئی ڈی',
-    'phone_number': 'فون نمبر',
-    'invalid_credentials': 'غلط اسناد۔ براہ کرم دوبارہ کوشش کریں۔',
-    'login_failed': 'لاگ ان ناکام ہوگیا۔ براہ کرم دوبارہ کوشش کریں۔',
-    'error_occurred': 'ایک خرابی پیش آگئی۔ براہ کرم بعد میں دوبارہ کوشش کریں۔',
-    'welcome': 'خوش آمدید',
-    'actions': 'اقدامات',
-    'categories': 'زمرہ جات',
-    'view_more': 'مزید دیکھیں',
-    'products': 'مصنوعات',
-    'address': 'پتہ',
-    'directions': 'ہدایات',
-    'call': 'کال',
-    'admin_dashboard': 'ایڈمن ڈیش بورڈ',
-    'operations': 'آپریشنز',
-    'pending_payments': 'زیر التواء ادائیگیاں',
-    'trash': 'ردی',
-    'add_user': 'صارف شامل کریں',
-    'delete_user': 'صارف کو حذف کریں',
-    'view_all_users': 'تمام صارفین دیکھیں',
-    'add_payment': 'ادائیگی شامل کریں',
-    'view_payments': 'ادائیگیاں دیکھیں',
-    'view_payments_by_month': 'مہینہ کے مطابق ادائیگیاں دیکھیں',
-    'search_by_village': 'گاؤں کے ذریعہ تلاش کریں',
-    'inactive_customers': 'غیر فعال گاہک',
-    'name': 'نام',
-    'village': 'گاؤں',
-    'category': 'زمرہ',
-    'amount': 'رقم',
-    'month': 'مہینہ',
-    'search_users': 'صارفین تلاش کریں',
-    'total_users': 'کل صارفین',
-    'refresh_users_list': 'صارفین کی فہرست ریفریش کریں',
-    'move_user_to_trash': 'صارف کو ردی میں منتقل کریں',
-    'confirm_deletion': 'حذف کرنے کی تصدیق کریں',
-    'are_you_sure_delete': 'کیا آپ واقعی اس صارف کو ردی میں منتقل کرنا چاہتے ہیں؟',
-    'user_details': 'صارف کی تفصیلات',
-    'cancel': 'منسوخ کریں',
-    'move_to_trash': 'ردی میں منتقل کریں',
-    'user_moved_to_trash': 'صارف کامیابی سے ردی میں منتقل کر دیا گیا',
-    'failed_to_delete_user': 'صارف کو حذف کرنے میں ناکام',
-    'payment_history': 'ادائیگی کی تاریخ',
-    'no_payments_found': 'کوئی ادائیگیاں نہیں ملیں۔',
-    'make_payment': 'ادائیگی کریں',
-    'transaction_id': 'ٹرانزیکشن آئی ڈی',
-    'submit_payment': 'ادائیگی جمع کریں',
-    'payment_request_submitted': 'ادائیگی کی درخواست کامیابی سے جمع کرائی گئی',
-    'payment_already_made': 'مہینہ {month} کے لیے ادائیگی پہلے ہی کی جا چکی ہے۔',
-    'please_enter_transaction_id': 'براہ کرم ٹرانزیکشن آئی ڈی درج کریں',
-    'no_deleted_users_found': 'کوئی حذف شدہ صارفین نہیں ملے',
-    'restore_user': 'صارف کو بحال کریں',
-    'delete_permanently': 'مستقل طور پر حذف کریں',
-    'permanently_delete_user': 'صارف کو مستقل طور پر حذف کریں',
-    'are_you_sure_permanent_delete': 'کیا آپ واقعی {name} (آئی ڈی: {id}) کو مستقل طور پر حذف کرنا چاہتے ہیں؟ یہ عمل واپس نہیں کیا جا سکتا۔',
-    'user_restored': 'صارف کامیابی سے بحال کر دیا گیا',
-    'user_permanently_deleted': 'صارف مستقل طور پر حذف کر دیا گیا',
-    'no_pending_payment_requests': 'کوئی زیر التواء ادائیگی کی درخواستیں نہیں ہیں۔',
-    'language': 'زبان',
-    'select_language': 'زبان منتخب کریں',
-    'english': 'انگریزی',
-    'tamil': 'تامل',
-    'hindi': 'ہندی',
-    'telugu': 'تیلگو',
-    'kannada': 'کنڑ',
-    'urdu': 'اردو',
-    'language_settings': 'زبان کی ترتیبات',
-    'language_updated': 'زبان کامیابی سے اپڈیٹ ہو گئی',
-    'service_description': 'مختلف زمروں کے ساتھ دیوالی چٹس میں مہارت۔',
-    'nanjappan': 'ننجپن',
-    'suselamma': 'سوسیلما',
-    'honoured': 'معزز',
-    'owner': 'مالک',
-    'location_permission_denied': 'مقام کی اجازت سے انکار کر دیا گیا',
-    'location_permission_permanently_denied': 'مقام کی اجازتوں سے مستقل طور پر انکار کر دیا گیا، براہ کرم ترتیبات میں فعال کریں',
-    'could_not_open_maps': 'نقشہ نہیں کھول سکا',
-    'error_opening_maps': 'نقشہ کھولنے میں خرابی',
-    'cannot_open_phone_dialer': 'فون ڈائلر نہیں کھول سکتا',
-    'error_making_phone_call': 'فون کال کرنے میں خرابی',
-    'gold_category': 'سونا',
-    'silver_category': 'چاندی',
-    'bronze_category': 'کانسی',
-    'per_month': 'فی مہینہ',
-    'rice': 'چاول',
-    'maida': 'میدہ',
-    'oil': 'تیل',
-    'wheat_flour': 'گندم کا آٹا',
-    'white_dhall': 'سفید دال',
-    'rice_raw': 'کچے چاول',
-    'semiya': 'سیمیا',
-    'payasam_mix': 'پایاسم مکس',
-    'sugar': 'چینی',
-    'sesame_oil': 'تل کا تیل',
-    'tamarind': 'امرود',
-    'dry_chilli': 'خشک مرچ',
-    'coriander_seeds': 'دھنیا کے بیج',
-    'salt': 'نمک',
-    'jaggery': 'گڑ',
-    'pattasu_box': 'پٹاخوں کا ڈبہ',
-    'matches_box': 'ماچس کا ڈبہ',
-    'turmeric_powder': 'ہلدی پاؤڈر',
-    'kumkum': 'کمکم',
-    'camphor': 'کافور',
-    'pack': 'پیک',
-    'box': 'ڈبہ',
-    'liters': 'لیٹر',
-    'liter': 'لیٹر',
-    'grams': 'گرام',
-    'pieces': 'ٹکڑے',
-    'please_enter_user_id': 'براہ کرم اپنی صارف آئی ڈی درج کریں',
-    'please_enter_phone_number': 'براہ کرم اپنا فون نمبر درج کریں',
-    'please_enter_user_id_to_delete': 'براہ کر  براہ کرم اپنا فون نمبر درج کریں',
-    'please_enter_user_id_to_delete': 'براہ کرم حذف کرنے کے لیے صارف آئی ڈی درج کریں',
-    'please_enter_user_id_to_view_payments': 'ادائیگیاں دیکھنے کے لیے براہ کرم صارف آئی ڈی درج کریں',
-    'please_enter_month_to_view_payments': 'ادائیگیاں دیکھنے کے لیے براہ کرم مہینہ درج کریں',
-    'please_enter_name': 'براہ کرم نام درج کریں',
-    'please_enter_village': 'براہ کرم گاؤں درج کریں',
-    'please_enter_amount': 'براہ کرم رقم درج کریں',
-    'please_enter_month': 'براہ کرم مہینہ درج کریں',
-    'please_select_village': 'براہ کرم گاؤں منتخب کریں',
-    'search': 'تلاش کریں',
-    'customers_in': 'گاہک',
-    'refresh_inactive_customers': 'غیر فعال گاہکوں کو ریفریش کریں',
-    'last_payment': 'آخری ادائیگی',
-    'admin_operations': 'ایڈمن آپریشنز',
-    'add_user': 'صارف شامل کریں',
-    'user_dashboard': 'صارف ڈیش بورڈ',
-    'notifications': 'اطلاعات',
-    'no_notifications': 'کوئی اطلاعات نہیں',
-    'payment_approved': 'ادائیگی کامیابی سے منظور کر دی گئی',
-    'payment_rejected': 'ادائیگی کامیابی سے مسترد کر دی گئی',
-    'approve': 'منظور کریں',
-    'reject': 'مسترد کریں',
-    'month_format': 'مہینہ (مثال کے طور پر، جنوری کے لیے 01)',
-    'paid': 'ادا کیا گیا',
-    'unpaid': 'ادا نہیں کیا گیا',
-    'no_paid_users': 'اس مہینے کے لیے کوئی ادا شدہ صارفین نہیں ہیں',
-    'no_unpaid_users': 'اس مہینے کے لیے کوئی غیر ادا شدہ صارفین نہیں ہیں',
-    'payments': 'ادائیگیاں',
-    'user': 'صارف',
-    'deleted_on': 'حذف کیا گیا',
-    'qr_code_not_available': 'QR کوڈ دستیاب نہیں ہے',
-    'contact_admin_for_payment_details': 'ادائیگی کی تفصیلات کے لیے براہ کرم ایڈمن سے رابطہ کریں',
-    'failed_to_submit_payment_request': 'ادائیگی کی درخواست جمع کرانے میں ناکام',
-  },
-};
+  // Method to get the current locale from shared preferences
+  static Future<Locale> getLocale() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String languageCode = prefs.getString('languageCode') ?? 'en';
+    return Locale(languageCode, '');
+  }
+  
+  // Method to set the locale in shared preferences
+  static Future<void> setLocale(String languageCode) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('languageCode', languageCode);
+  }
+  
+  // Method to update the user's language preference on the server
+  static Future<void> updateLanguageOnServer(String userId, String languageCode) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:4000/update_language'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'userId': int.parse(userId), 'language': languageCode}),
+      );
+      
+      if (response.statusCode != 200) {
+        print('Failed to update language on server: ${response.body}');
+      }
+    } catch (e) {
+      print('Error updating language on server: $e');
+    }
+  }
+  
+  // Translations map
+  late Map<String, String> _localizedStrings;
+  
+  Future<bool> load() async {
+    // Load translations for the current locale
+    _localizedStrings = await _loadTranslations(locale.languageCode);
+    return true;
+  }
+  
+  // This method will be called from every widget which needs a localized text
+  String translate(String key) {
+    // If the key doesn't exist in the translations, return the key itself
+    // or the English default if available
+    return _localizedStrings[key] ?? _defaultEnglishTranslations[key] ?? key;
+  }
+  
+  // Load translations from API or cache
+  Future<Map<String, String>> _loadTranslations(String languageCode) async {
+    // If language is English, return the default English translations
+    if (languageCode == 'en') {
+      return Map<String, String>.from(_defaultEnglishTranslations);
+    }
+    
+    // Check if translations are already in cache
+    if (_translationCache.containsKey(languageCode)) {
+      return _translationCache[languageCode]!;
+    }
+    
+    // Otherwise, fetch translations from API
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:4000/translate-object'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'object': _defaultEnglishTranslations,
+          'targetLang': languageCode,
+          'sourceLang': 'en'
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final translatedObject = data['translatedObject'];
+        
+        // Convert all values to strings
+        final translations = Map<String, String>.from(
+          translatedObject.map((key, value) => MapEntry(key, value.toString()))
+        );
+        
+        // Cache the translations
+        _translationCache[languageCode] = translations;
+        
+        return translations;
+      } else {
+        print('Failed to fetch translations: ${response.body}');
+        // Fallback to English if API call fails
+        return Map<String, String>.from(_defaultEnglishTranslations);
+      }
+    } catch (e) {
+      print('Error fetching translations: $e');
+      
+      // Try to use offline translation for common phrases
+      try {
+        // Fallback to direct translation API for critical UI elements
+        final fallbackTranslations = await _translateCriticalElements(languageCode);
+        return fallbackTranslations;
+      } catch (fallbackError) {
+        print('Fallback translation error: $fallbackError');
+        // If all else fails, return English
+        return Map<String, String>.from(_defaultEnglishTranslations);
+      }
+    }
+  }
+  
+  // Translate critical UI elements directly using a fallback API
+  Future<Map<String, String>> _translateCriticalElements(String languageCode) async {
+    // List of critical UI elements that must be translated
+    final criticalKeys = [
+      'login', 'logout', 'user_id', 'phone_number', 'welcome',
+      'actions', 'categories', 'view_more', 'products', 'address',
+      'name', 'village', 'category', 'amount', 'month',
+      'cancel', 'search', 'language', 'english', 'tamil', 'hindi', 'telugu', 'kannada', 'urdu'
+    ];
+    
+    final Map<String, String> criticalTranslations = {};
+    
+    // Copy all English translations first
+    final result = Map<String, String>.from(_defaultEnglishTranslations);
+    
+    // Try to translate critical elements using Google Translate API (no key required)
+    for (final key in criticalKeys) {
+      final text = _defaultEnglishTranslations[key];
+      if (text != null) {
+        try {
+          final encodedText = Uri.encodeComponent(text);
+          final url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=$languageCode&dt=t&q=$encodedText';
+          
+          final response = await http.get(Uri.parse(url));
+          
+          if (response.statusCode == 200) {
+            final data = json.decode(response.body);
+            if (data != null && data[0] != null && data[0][0] != null && data[0][0][0] != null) {
+              final translatedText = data[0][0][0].toString();
+              criticalTranslations[key] = translatedText;
+            }
+          }
+        } catch (e) {
+          print('Error translating critical element $key: $e');
+        }
+      }
+    }
+    
+    // Update result with any successful translations
+    result.addAll(criticalTranslations);
+    
+    // Cache these translations
+    _translationCache[languageCode] = result;
+    
+    return result;
+  }
+  
+  // Method to translate a single text on-the-fly
+  static Future<String> translateText(String text, String targetLang, {String sourceLang = 'en'}) async {
+    // If target language is the same as source, return the original text
+    if (targetLang == sourceLang) {
+      return text;
+    }
+    
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:4000/translate'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'text': text,
+          'targetLang': targetLang,
+          'sourceLang': sourceLang
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['translatedText'] ?? text;
+      } else {
+        print('Failed to translate text: ${response.body}');
+        return text;
+      }
+    } catch (e) {
+      print('Error translating text: $e');
+      
+      // Fallback to Google Translate API
+      try {
+        final encodedText = Uri.encodeComponent(text);
+        final url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=$sourceLang&tl=$targetLang&dt=t&q=$encodedText';
+        
+        final response = await http.get(Uri.parse(url));
+        
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          if (data != null && data[0] != null && data[0][0] != null && data[0][0][0] != null) {
+            return data[0][0][0].toString();
+          }
+        }
+      } catch (fallbackError) {
+        print('Fallback translation error: $fallbackError');
+      }
+      
+      return text;
+    }
+  }
+  
+  // Clear translation cache
+  static void clearCache() {
+    _translationCache.clear();
+  }
+}

@@ -1,21 +1,64 @@
-const { translate, supportedLanguages } = require('../i18n/i18n');
+const { translateText } = require('../i18n/translation-service');
 
-// Middleware to handle language preferences
-module.exports = (req, res, next) => {
-  // Get the language from the request header or query parameter
-  const lang = req.headers['accept-language'] || req.query.lang || 'en';
+// Default translations for common messages
+const defaultMessages = {
+  en: {
+    userNotFound: "User not found",
+    userIdExists: "User ID already exists",
+    userAdded: "User added successfully",
+    paymentAdded: "Payment added successfully",
+    userDeleted: "User deleted successfully",
+    userMovedToTrash: "User moved to trash successfully",
+    userRestored: "User restored successfully",
+    userPermanentlyDeleted: "User permanently deleted",
+    invalidCredentials: "Invalid credentials",
+    paymentExists: "Payment for this month already exists",
+    pendingPaymentExists: "A pending payment request already exists for this month",
+    transactionIdExists: "Transaction ID already exists",
+    paymentRequestSubmitted: "Payment request submitted successfully",
+    paymentApproved: "Payment approved successfully",
+    paymentRejected: "Payment rejected successfully",
+    languageUpdated: "Language updated successfully",
+    transactionNotFound: "Transaction not found",
+    userNotDeleted: "User is not deleted",
+    userAlreadyDeleted: "User is already deleted",
+    userNotInTrash: "User is not in trash",
+    welcomeMessage: "Welcome to Nanjundeshwara Stores, {name}!",
+    paymentRecorded: "Your payment of ₹{amount} for month {month} has been recorded",
+    paymentApprovedNotification: "Your payment of ₹{amount} for month {month} has been approved",
+    paymentRejectedNotification: "Your payment of ₹{amount} for month {month} has been rejected",
+    deviceRegistered: "Device registered successfully",
+    userDeleted: "User is deleted"
+  }
+};
+
+// Language middleware
+module.exports = async (req, res, next) => {
+  // Get language from query, header, or default to English
+  const lang = req.query.lang || req.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
   
-  // Extract the primary language code (e.g., 'en-US' -> 'en')
-  const primaryLang = lang.split('-')[0].toLowerCase();
-  
-  // Check if the language is supported, otherwise default to English
-  const selectedLang = supportedLanguages.includes(primaryLang) ? primaryLang : 'en';
+  // Store language in request and response locals
+  req.lang = lang;
+  res.locals.lang = lang;
   
   // Add translation function to response locals
-  res.locals.t = (key, params = {}) => translate(key, selectedLang, params);
-  
-  // Store the selected language for later use
-  req.lang = selectedLang;
+  res.locals.t = async (key, params = {}) => {
+    let message = defaultMessages.en[key] || key;
+    
+    // If language is not English, translate the message
+    if (lang !== 'en') {
+      message = await translateText(message, lang, 'en');
+    }
+    
+    // Replace parameters in the message
+    if (params) {
+      Object.keys(params).forEach(param => {
+        message = message.replace(`{${param}}`, params[param]);
+      });
+    }
+    
+    return message;
+  };
   
   next();
 };

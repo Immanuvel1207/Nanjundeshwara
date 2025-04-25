@@ -800,5 +800,58 @@ async function startServer() {
   }
 }
 
+const { translateText, translateObject } = require('./i18n/translation-service');
+
+// Endpoint to translate a single text
+app.post("/translate", async (req, res) => {
+  const { text, targetLang, sourceLang = 'en' } = req.body;
+  
+  if (!text || !targetLang) {
+    return res.status(400).json({ error: "Text and target language are required" });
+  }
+  
+  try {
+    const translatedText = await translateText(text, targetLang, sourceLang);
+    res.json({ translatedText });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Endpoint to translate multiple texts at once
+app.post("/translate-batch", async (req, res) => {
+  const { texts, targetLang, sourceLang = 'en' } = req.body;
+  
+  if (!texts || !Array.isArray(texts) || !targetLang) {
+    return res.status(400).json({ error: "Array of texts and target language are required" });
+  }
+  
+  try {
+    const translatedTexts = await Promise.all(
+      texts.map(text => translateText(text, targetLang, sourceLang))
+    );
+    
+    res.json({ translatedTexts });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Endpoint to translate an entire object
+app.post("/translate-object", async (req, res) => {
+  const { object, targetLang, sourceLang = 'en' } = req.body;
+  
+  if (!object || typeof object !== 'object' || !targetLang) {
+    return res.status(400).json({ error: "Object and target language are required" });
+  }
+  
+  try {
+    const translatedObject = await translateObject(object, targetLang, sourceLang);
+    res.json({ translatedObject });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Start the server
 startServer()
