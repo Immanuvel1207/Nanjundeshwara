@@ -11,7 +11,7 @@ const PORT = 4000
 app.use(
   cors({
     origin: "*", // Allow all origins (for testing purposes)
-    methods: ["GET", "POST", "DELETE"], // Allow GET, POST and DELETE requests
+    methods: ["GET", "POST", "DELETE", "PUT"], // Added PUT for restoring users
   }),
 )
 app.use(bodyParser.json())
@@ -25,6 +25,8 @@ const userSchema = new mongoose.Schema({
   c_category: String,
   phone: String,
   language: { type: String, default: "en" }, // Add language preference to user schema
+  isDeleted: { type: Boolean, default: false }, // Add deletion status
+  deletedAt: { type: Date, default: null }, // Add deletion timestamp
 })
 
 const paymentSchema = new mongoose.Schema({
@@ -239,8 +241,8 @@ app.get("/find_payments", async (req, res) => {
 app.get("/view_payments_by_month", async (req, res) => {
   const month = req.query.p_month
   try {
-    // Get all users
-    const allUsers = await User.find().sort({ _id: 1 })
+    // Get all active users
+    const allUsers = await User.find({ isDeleted: { $ne: true } }).sort({ _id: 1 })
 
     // Get all payments for the specified month
     const payments = await Payment.find({ p_month: month })
@@ -293,7 +295,8 @@ app.get("/view_payments_by_month", async (req, res) => {
 
 app.get("/find_all_users", async (req, res) => {
   try {
-    const users = await User.find().sort({ _id: 1 })
+    // Only get active users
+    const users = await User.find({ isDeleted: { $ne: true } }).sort({ _id: 1 })
 
     // Get payment counts for each user
     const userIds = users.map((user) => user._id)
@@ -324,10 +327,94 @@ app.get("/find_all_users", async (req, res) => {
   }
 })
 
+// New endpoint to get deleted users (trash)
+app.get("/deleted_users", async (req, res) => {
+  try {
+    const deletedUsers = await User.find({ isDeleted: true }).sort({ deletedAt: -1 })
+    
+    // Get payment counts for each user
+    const userIds = deletedUsers.map((user) => user._id)
+    const paymentCounts = await Payment.aggregate([
+      { $match: { c_id: { $in: userIds } } },
+      { $group: { _id: "$c_id", count: { $sum: 1 } } },
+    ])
+
+    // Create a map of user ID to payment count
+    const paymentCountMap = {}
+    paymentCounts.forEach((item) => {
+      paymentCountMap[item._id] = item.count
+    })
+
+    // Add payment count to each user
+    const usersWithPaymentCount = deletedUsers.map((user) => {
+      const userObj = user.toObject()
+      userObj.paymentCount = paymentCountMap[user._id] || 0
+      return userObj
+    })
+
+    res.json({
+      totalCount: deletedUsers.length,
+      users: usersWithPaymentCount,
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// New endpoint to restore a deleted user
+app.put("/restore_user/:userId", async (req, res) => {
+  const userId = Number.parseInt(req.params.userId)
+  try {
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ error: res.locals.t("userNotFound") })
+    }
+    
+    if (!user.isDeleted) {
+      return res.status(400).json({ error: res.locals.t("userNotDeleted") })
+    }
+    
+    user.isDeleted = false
+    user.deletedAt = null
+    await user.save()
+    
+    res.json({ message: res.locals.t("userRestored"), data: user })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// New endpoint to permanently delete a user
+app.delete("/permanent_delete_user/:userId", async (req, res) => {
+  const userId = Number.parseInt(req.params.userId)
+  try {
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(404).json({ error: res.locals.t("userNotFound") })
+    }
+    
+    if (!user.isDeleted) {
+      return res.status(400).json({ error: res.locals.t("userNotInTrash") })
+    }
+    
+    // Permanently delete the user
+    await User.findByIdAndDelete(userId)
+    
+    // Delete related records
+    await Payment.deleteMany({ c_id: userId })
+    await Notification.deleteMany({ userId: userId })
+    await Transaction.deleteMany({ userId: userId })
+    
+    res.json({ message: res.locals.t("userPermanentlyDeleted", { userId }) })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 app.get("/search_users", async (req, res) => {
   const { name, c_category, c_vill } = req.query
   try {
-    const query = {}
+    const query = { isDeleted: { $ne: true } } // Only search active users
     if (name) query.c_name = new RegExp(name, "i")
     if (c_category) query.c_category = new RegExp(c_category, "i")
     if (c_vill) query.c_vill = new RegExp(c_vill, "i")
@@ -355,7 +442,7 @@ app.get("/search_by_village", async (req, res) => {
       return res.status(400).json({ error: "Village name is required" })
     }
 
-    const users = await User.find({ c_vill: village }).sort({ _id: 1 })
+    const users = await User.find({ c_vill: village, isDeleted: { $ne: true } }).sort({ _id: 1 })
 
     // Get payment counts for each user
     const userIds = users.map((user) => user._id)
@@ -389,8 +476,8 @@ app.get("/search_by_village", async (req, res) => {
 
 app.get("/inactive_customers", async (req, res) => {
   try {
-    // Get all users
-    const allUsers = await User.find()
+    // Get all active users
+    const allUsers = await User.find({ isDeleted: { $ne: true } })
 
     // Get current date and calculate 2 months ago
     const currentDate = new Date()
@@ -430,6 +517,7 @@ app.get("/inactive_customers", async (req, res) => {
   }
 })
 
+// Modified to soft delete users instead of permanently deleting them
 app.delete("/delete_user/:userId", async (req, res) => {
   const userId = Number.parseInt(req.params.userId)
   try {
@@ -438,16 +526,17 @@ app.delete("/delete_user/:userId", async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: res.locals.t("userNotFound") })
     }
+    
+    if (user.isDeleted) {
+      return res.status(400).json({ error: res.locals.t("userAlreadyDeleted") })
+    }
 
-    // Delete the user
-    await User.findByIdAndDelete(userId)
+    // Soft delete the user
+    user.isDeleted = true
+    user.deletedAt = new Date()
+    await user.save()
 
-    // Delete related records
-    await Payment.deleteMany({ c_id: userId })
-    await Notification.deleteMany({ userId: userId })
-    await Transaction.deleteMany({ userId: userId })
-
-    res.json({ message: res.locals.t("userDeleted", { userId }) })
+    res.json({ message: res.locals.t("userMovedToTrash", { userId }) })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -460,7 +549,7 @@ app.post("/login", async (req, res) => {
       return res.json({ success: true, isAdmin: true })
     }
 
-    const user = await User.findOne({ _id: username, phone: password })
+    const user = await User.findOne({ _id: username, phone: password, isDeleted: { $ne: true } })
     if (user) {
       res.json({ success: true, isAdmin: false, userId: user._id, language: user.language || "en" })
     } else {
@@ -521,6 +610,10 @@ app.post("/request_payment", async (req, res) => {
     const user = await User.findById(userId)
     if (!user) {
       return res.status(404).json({ error: res.locals.t("userNotFound") })
+    }
+    
+    if (user.isDeleted) {
+      return res.status(400).json({ error: res.locals.t("userDeleted") })
     }
 
     const userLang = user.language || "en"

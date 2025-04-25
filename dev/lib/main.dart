@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -281,21 +282,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 36,
                     child: ElevatedButton.icon(
                       onPressed: () async {
-                        final googleMapsUrl = 'comgooglemaps://?daddr=Veppanapalli&center=12.5683,78.2317&zoom=15';
-                        final fallbackUrl = 'https://www.google.com/maps/dir/?api=1&destination=Veppanapalli';
+                        // FIXED: Improved directions functionality
                         try {
-                          if (await canLaunch(googleMapsUrl)) {
-                            await launch(googleMapsUrl);
-                          } else if (await canLaunch(fallbackUrl)) {
-                            await launch(fallbackUrl);
-                          } else {
+                          // First check if we have location permission
+                          LocationPermission permission = await Geolocator.checkPermission();
+                          if (permission == LocationPermission.denied) {
+                            permission = await Geolocator.requestPermission();
+                            if (permission == LocationPermission.denied) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Location permission denied')),
+                              );
+                              return;
+                            }
+                          }
+                          
+                          if (permission == LocationPermission.deniedForever) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Could not open maps')),
+                              SnackBar(content: Text('Location permissions permanently denied, please enable in settings')),
                             );
+                            return;
+                          }
+                          
+                          // Try to open Google Maps app first
+                          final Uri googleMapsUri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=Veppanapalli&destination_place_id=ChIJXbGmYHVdqzsRCLLuI0YpO_A');
+                          if (await canLaunchUrl(googleMapsUri)) {
+                            await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
+                          } else {
+                            // Fallback to web URL
+                            final Uri webUri = Uri.parse('https://maps.app.goo.gl/44evAN22mo1KNfTc7');
+                            if (await canLaunchUrl(webUri)) {
+                              await launchUrl(webUri, mode: LaunchMode.externalApplication);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Could not open maps')),
+                              );
+                            }
                           }
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error opening maps')),
+                            SnackBar(content: Text('Error opening maps: $e')),
                           );
                         }
                       },
@@ -314,19 +339,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 36,
                     child: ElevatedButton.icon(
                       onPressed: () async {
-                        final cleanPhone = phoneNumber.replaceAll(' ', '').replaceAll('+', '');
-                        final phoneUrl = 'tel:$cleanPhone';
+                        // FIXED: Improved phone call functionality
                         try {
-                          if (await canLaunch(phoneUrl)) {
-                            await launch(phoneUrl);
+                          final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+                          if (await canLaunchUrl(phoneUri)) {
+                            await launchUrl(phoneUri);
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Cannot open dialer')),
+                              SnackBar(content: Text('Cannot open phone dialer')),
                             );
                           }
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error: $e')),
+                            SnackBar(content: Text('Error making phone call: $e')),
                           );
                         }
                       },
@@ -504,7 +529,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       try {
         final response = await http.post(
-          Uri.parse('https://nanjundeshwara.vercel.app/login'),
+          Uri.parse('http://localhost:4000/login'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'username': _username, 'password': _password}),
         );
@@ -633,6 +658,21 @@ class AdminScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 10),
+            // NEW: Added Trash button
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TrashScreen()),
+                );
+              },
+              child: Text('Trash'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[700],
+                foregroundColor: Colors.white,
+              ),
+            ),
+            SizedBox(height: 10),
             ElevatedButton(
               onPressed: () => _logout(context),
               child: Text('Logout'),
@@ -644,6 +684,183 @@ class AdminScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// NEW: Added TrashScreen to manage deleted users
+class TrashScreen extends StatefulWidget {
+  @override
+  _TrashScreenState createState() => _TrashScreenState();
+}
+
+class _TrashScreenState extends State<TrashScreen> {
+  List<Map<String, dynamic>> _deletedUsers = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDeletedUsers();
+  }
+
+  Future<void> _fetchDeletedUsers() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:4000/deleted_users'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          _deletedUsers = List<Map<String, dynamic>>.from(data['users']);
+          _isLoading = false;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch deleted users: ${response.body}')),
+        );
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _restoreUser(int userId) async {
+    try {
+      final response = await http.put(
+        Uri.parse('http://localhost:4000/restore_user/$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User restored successfully')),
+        );
+        _fetchDeletedUsers(); // Refresh the list
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to restore user: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  Future<void> _permanentlyDeleteUser(int userId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('http://localhost:4000/permanent_delete_user/$userId'),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User permanently deleted')),
+        );
+        _fetchDeletedUsers(); // Refresh the list
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to permanently delete user: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $e')),
+      );
+    }
+  }
+
+  void _showDeleteConfirmationDialog(int userId, String userName) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Permanently Delete User'),
+          content: Text('Are you sure you want to permanently delete $userName (ID: $userId)? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _permanentlyDeleteUser(userId);
+              },
+              child: Text('Delete Permanently', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Trash'),
+        backgroundColor: Colors.red[700],
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _deletedUsers.isEmpty
+              ? Center(child: Text('No deleted users found'))
+              : ListView.builder(
+                  itemCount: _deletedUsers.length,
+                  itemBuilder: (context, index) {
+                    final user = _deletedUsers[index];
+                    final deletedAt = user['deletedAt'] != null 
+                        ? DateTime.parse(user['deletedAt']).toString().substring(0, 16)
+                        : 'Unknown';
+                    
+                    return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: ListTile(
+                        title: Text('${user['_id']} - ${user['c_name']}'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Village: ${user['c_vill']}, Category: ${user['c_category']}'),
+                            Text('Phone: ${user['phone']}'),
+                            Text('Deleted on: $deletedAt'),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.restore, color: Colors.green),
+                              onPressed: () => _restoreUser(user['_id']),
+                              tooltip: 'Restore User',
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete_forever, color: Colors.red),
+                              onPressed: () => _showDeleteConfirmationDialog(user['_id'], user['c_name']),
+                              tooltip: 'Delete Permanently',
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }
@@ -664,7 +881,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
 
   Future<void> _fetchPendingTransactions() async {
     try {
-      final url = Uri.parse('https://nanjundeshwara.vercel.app/pending_transactions');
+      final url = Uri.parse('http://localhost:4000/pending_transactions');
       print('Sending request to: $url'); // Log the request URL
 
       final response = await http.get(url);
@@ -694,7 +911,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
   Future<void> _approvePayment(String transactionId) async {
     try {
       final response = await http.post(
-        Uri.parse('https://nanjundeshwara.vercel.app/approve_payment'),
+        Uri.parse('http://localhost:4000/approve_payment'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'transactionId': transactionId}),
       );
@@ -719,7 +936,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
   Future<void> _rejectPayment(String transactionId) async {
     try {
       final response = await http.post(
-        Uri.parse('https://nanjundeshwara.vercel.app/reject_payment'),
+        Uri.parse('http://localhost:4000/reject_payment'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'transactionId': transactionId}),
       );
@@ -832,7 +1049,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _fetchVillages() async {
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/get_all_villages'),
+        Uri.parse('http://localhost:4000/get_all_villages'),
       );
 
       if (response.statusCode == 200) {
@@ -865,7 +1082,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/search_by_village?village=${_selectedVillage}'),
+        Uri.parse('http://localhost:4000/search_by_village?village=${_selectedVillage}'),
       );
 
       if (response.statusCode == 200) {
@@ -888,7 +1105,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _fetchInactiveCustomers() async {
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/inactive_customers'),
+        Uri.parse('http://localhost:4000/inactive_customers'),
       );
 
       if (response.statusCode == 200) {
@@ -912,7 +1129,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('https://nanjundeshwara.vercel.app/add_user'),
+          Uri.parse('http://localhost:4000/add_user'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'userId': int.parse(_userIdController.text),
@@ -951,7 +1168,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${_userIdController.text}'),
+        Uri.parse('http://localhost:4000/find_user?userId=${_userIdController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -983,7 +1200,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Are you sure you want to delete this user?'),
+              Text('Are you sure you want to move this user to trash?'),
               SizedBox(height: 20),
               Text('User Details:', style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
@@ -1006,7 +1223,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
                 Navigator.of(context).pop(); // Close the dialog
                 _deleteUser(); // Proceed with deletion
               },
-              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              child: Text('Move to Trash', style: TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -1017,12 +1234,12 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _deleteUser() async {
     try {
       final response = await http.delete(
-        Uri.parse('https://nanjundeshwara.vercel.app/delete_user/${_userIdController.text}'),
+        Uri.parse('http://localhost:4000/delete_user/${_userIdController.text}'),
       );
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User deleted successfully')),
+          SnackBar(content: Text('User moved to trash successfully')),
         );
         _clearForm();
       } else {
@@ -1040,7 +1257,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _viewAllUsers() async {
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/find_all_users'),
+        Uri.parse('http://localhost:4000/find_all_users'),
       );
 
       if (response.statusCode == 200) {
@@ -1064,7 +1281,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('https://nanjundeshwara.vercel.app/add_payments'),
+          Uri.parse('http://localhost:4000/add_payments'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'c_id': int.parse(_userIdController.text),
@@ -1101,7 +1318,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/find_payments?userIdPayments=${_userIdController.text}'),
+        Uri.parse('http://localhost:4000/find_payments?userIdPayments=${_userIdController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -1130,7 +1347,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/view_payments_by_month?p_month=${_monthController.text}'),
+        Uri.parse('http://localhost:4000/view_payments_by_month?p_month=${_monthController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -1158,7 +1375,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${_userIdController.text}'),
+        Uri.parse('http://localhost:4000/find_user?userId=${_userIdController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -1316,7 +1533,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
         SizedBox(height: 20),
         ElevatedButton(
           onPressed: _fetchUserDetailsForDeletion,
-          child: Text('Delete User'),
+          child: Text('Move User to Trash'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.deepPurple,
             foregroundColor: Colors.white,
@@ -1697,7 +1914,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${widget.username}'),
+        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1719,7 +1936,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchPayments() async {
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/find_payments?userIdPayments=${widget.username}'),
+        Uri.parse('http://localhost:4000/find_payments?userIdPayments=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1741,7 +1958,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchNotifications() async {
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/notifications/${widget.username}'),
+        Uri.parse('http://localhost:4000/notifications/${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1890,7 +2107,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${widget.username}'),
+        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -1913,7 +2130,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _checkPaymentStatus() async {
     try {
       final url = Uri.parse(
-        'https://nanjundeshwara.vercel.app/check_payment_status?userId=${widget.username}&month=$_selectedMonth',
+        'http://localhost:4000/check_payment_status?userId=${widget.username}&month=$_selectedMonth',
       );
       
       final response = await http.get(url);
@@ -1945,7 +2162,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     
     try {
       final response = await http.post(
-        Uri.parse('https://nanjundeshwara.vercel.app/request_payment'),
+        Uri.parse('http://localhost:4000/request_payment'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'userId': int.parse(widget.username),

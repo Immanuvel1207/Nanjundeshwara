@@ -1,28 +1,192 @@
-const translations = require("./translations")
-
-// Function to format messages with variables
-function formatMessage(message, variables) {
-  if (!variables) return message
-
-  let formattedMessage = message
-  for (const key in variables) {
-    formattedMessage = formattedMessage.replace(`{${key}}`, variables[key])
+// Translation system for the server
+const translations = {
+  en: {
+    userNotFound: "User not found",
+    userIdExists: "User ID already exists",
+    userDeleted: "User has been deleted",
+    userMovedToTrash: "User with ID {{userId}} has been moved to trash",
+    userRestored: "User has been restored successfully",
+    userPermanentlyDeleted: "User with ID {{userId}} has been permanently deleted",
+    userAdded: "User added successfully",
+    paymentAdded: "Payment added successfully",
+    paymentExists: "Payment for this month already exists",
+    pendingPaymentExists: "A pending payment request for this month already exists",
+    transactionIdExists: "Transaction ID already exists",
+    paymentRequestSubmitted: "Payment request submitted successfully",
+    paymentApproved: "Payment approved successfully",
+    paymentRejected: "Payment rejected successfully",
+    transactionNotFound: "Transaction not found",
+    invalidCredentials: "Invalid credentials",
+    languageUpdated: "Language preference updated successfully",
+    welcomeMessage: "Welcome to Nanjundeshwara Stores, {{name}}!",
+    paymentRecorded: "Your payment of ₹{{amount}} for month {{month}} has been recorded",
+    paymentRequestPending: "Your payment request of ₹{{amount}} for month {{month}} is pending approval",
+    paymentApprovedNotification: "Your payment of ₹{{amount}} for month {{month}} has been approved",
+    paymentRejectedNotification: "Your payment of ₹{{amount}} for month {{month}} has been rejected",
+    userNotDeleted: "User is not in trash",
+    userAlreadyDeleted: "User is already in trash",
+    userNotInTrash: "User is not in trash",
+    deviceRegistered: "Device registered successfully"
+  },
+  ta: {
+    userNotFound: "பயனர் கிடைக்கவில்லை",
+    userIdExists: "பயனர் ஐடி ஏற்கனவே உள்ளது",
+    userDeleted: "பயனர் நீக்கப்பட்டுள்ளார்",
+    userMovedToTrash: "ஐடி {{userId}} கொண்ட பயனர் குப்பைத்தொட்டிக்கு நகர்த்தப்பட்டுள்ளார்",
+    userRestored: "பயனர் வெற்றிகரமாக மீட்டெடுக்கப்பட்டார்",
+    userPermanentlyDeleted: "ஐடி {{userId}} கொண்ட பயனர் நிரந்தரமாக நீக்கப்பட்டுள்ளார்",
+    userAdded: "பயனர் வெற்றிகரமாக சேர்க்கப்பட்டார்",
+    paymentAdded: "கட்டணம் வெற்றிகரமாக சேர்க்கப்பட்டது",
+    paymentExists: "இந்த மாதத்திற்கான கட்டணம் ஏற்கனவே உள்ளது",
+    pendingPaymentExists: "இந்த மாதத்திற்கான நிலுவையில் உள்ள கட்டண கோரிக்கை ஏற்கனவே உள்ளது",
+    transactionIdExists: "பரிவர்த்தனை ஐடி ஏற்கனவே உள்ளது",
+    paymentRequestSubmitted: "கட்டண கோரிக்கை வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது",
+    paymentApproved: "கட்டணம் வெற்றிகரமாக அங்கீகரிக்கப்பட்டது",
+    paymentRejected: "கட்டணம் நிராகரிக்கப்பட்டது",
+    transactionNotFound: "பரிவர்த்தனை கிடைக்கவில்லை",
+    invalidCredentials: "தவறான சான்றுகள்",
+    languageUpdated: "மொழி விருப்பம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது",
+    welcomeMessage: "நஞ்சுண்டேஸ்வரா ஸ்டோர்ஸுக்கு வரவேற்கிறோம், {{name}}!",
+    paymentRecorded: "மாதம் {{month}}க்கான உங்கள் ₹{{amount}} கட்டணம் பதிவு செய்யப்பட்டுள்ளது",
+    paymentRequestPending: "மாதம் {{month}}க்கான உங்கள் ₹{{amount}} கட்டண கோரிக்கை அங்கீகாரத்திற்காக காத்திருக்கிறது",
+    paymentApprovedNotification: "மாதம் {{month}}க்கான உங்கள் ₹{{amount}} கட்டணம் அங்கீகரிக்கப்பட்டது",
+    paymentRejectedNotification: "மாதம் {{month}}க்கான உங்கள் ₹{{amount}} கட்டணம் நிராகரிக்கப்பட்டது",
+    userNotDeleted: "பயனர் குப்பைத்தொட்டியில் இல்லை",
+    userAlreadyDeleted: "பயனர் ஏற்கனவே குப்பைத்தொட்டியில் உள்ளார்",
+    userNotInTrash: "பயனர் குப்பைத்தொட்டியில் இல்லை",
+    deviceRegistered: "சாதனம் வெற்றிகரமாக பதிவு செய்யப்பட்டது"
+  },
+  hi: {
+    userNotFound: "उपयोगकर्ता नहीं मिला",
+    userIdExists: "उपयोगकर्ता आईडी पहले से मौजूद है",
+    userDeleted: "उपयोगकर्ता हटा दिया गया है",
+    userMovedToTrash: "आईडी {{userId}} वाला उपयोगकर्ता ट्रैश में ले जाया गया है",
+    userRestored: "उपयोगकर्ता सफलतापूर्वक बहाल किया गया",
+    userPermanentlyDeleted: "आईडी {{userId}} वाला उपयोगकर्ता स्थायी रूप से हटा दिया गया है",
+    userAdded: "उपयोगकर्ता सफलतापूर्वक जोड़ा गया",
+    paymentAdded: "भुगतान सफलतापूर्वक जोड़ा गया",
+    paymentExists: "इस महीने के लिए भुगतान पहले से मौजूद है",
+    pendingPaymentExists: "इस महीने के लिए एक लंबित भुगतान अनुरोध पहले से मौजूद है",
+    transactionIdExists: "लेनदेन आईडी पहले से मौजूद है",
+    paymentRequestSubmitted: "भुगतान अनुरोध सफलतापूर्वक जमा किया गया",
+    paymentApproved: "भुगतान सफलतापूर्वक स्वीकृत किया गया",
+    paymentRejected: "भुगतान अस्वीकार कर दिया गया",
+    transactionNotFound: "लेनदेन नहीं मिला",
+    invalidCredentials: "अमान्य प्रमाण पत्र",
+    languageUpdated: "भाषा प्राथमिकता सफलतापूर्वक अपडेट की गई",
+    welcomeMessage: "नंजुंदेश्वरा स्टोर्स में आपका स्वागत है, {{name}}!",
+    paymentRecorded: "महीना {{month}} के लिए आपका ₹{{amount}} भुगतान दर्ज किया गया है",
+    paymentRequestPending: "महीना {{month}} के लिए आपका ₹{{amount}} भुगतान अनुरोध अनुमोदन के लिए लंबित है",
+    paymentApprovedNotification: "महीना {{month}} के ���िए आपका ₹{{amount}} भुगतान स्वीकृत किया गया है",
+    paymentRejectedNotification: "महीना {{month}} के लिए आपका ₹{{amount}} भुगतान अस्वीकार कर दिया गया है",
+    userNotDeleted: "उपयोगकर्ता ट्रैश में नहीं है",
+    userAlreadyDeleted: "उपयोगकर्ता पहले से ही ट्रैश में है",
+    userNotInTrash: "उपयोगकर्ता ट्रैश में नहीं है",
+    deviceRegistered: "डिवाइस सफलतापूर्वक पंजीकृत किया गया"
+  },
+  te: {
+    userNotFound: "వినియోగదారు కనబడలేదు",
+    userIdExists: "వినియోగదారు ఐడి ఇప్పటికే ఉంది",
+    userDeleted: "వినియోగదారు తొలగించబడ్డారు",
+    userMovedToTrash: "ఐడి {{userId}} గల వినియోగదారు ట్రాష్‌కి తరలించబడ్డారు",
+    userRestored: "వినియోగదారు విజయవంతంగా పునరుద్ధరించబడ్డారు",
+    userPermanentlyDeleted: "ఐడి {{userId}} గల వినియోగదారు శాశ్వతంగా తొలగించబడ్డారు",
+    userAdded: "వినియోగదారు విజయవంతంగా జోడించబడ్డారు",
+    paymentAdded: "చెల్లింపు విజయవంతంగా జోడించబడింది",
+    paymentExists: "ఈ నెలకు చెల్లింపు ఇప్పటికే ఉంది",
+    pendingPaymentExists: "ఈ నెలకు పెండింగ్ చెల్లింపు అభ్యర్థన ఇప్పటికే ఉంది",
+    transactionIdExists: "లావాదేవీ ఐడి ఇప్పటికే ఉంది",
+    paymentRequestSubmitted: "చెల్లింపు అభ్యర్థన విజయవంతంగా సమర్పించబడింది",
+    paymentApproved: "చెల్లింపు విజయవంతంగా ఆమోదించబడింది",
+    paymentRejected: "చెల్లింపు తిరస్కరించబడింది",
+    transactionNotFound: "లావాదేవీ కనబడలేదు",
+    invalidCredentials: "చెల్లని ఆధారాలు",
+    languageUpdated: "భాషా ప్రాధాన్యత విజయవంతంగా నవీకరించబడింది",
+    welcomeMessage: "నంజుండేశ్వర స్టోర్స్‌కి స్వాగతం, {{name}}!",
+    paymentRecorded: "నెల {{month}} కోసం మీ ₹{{amount}} చెల్లింపు నమోదు చేయబడింది",
+    paymentRequestPending: "నెల {{month}} కోసం మీ ₹{{amount}} చెల్లింపు అభ్యర్థన ఆమోదం కోసం పెండింగ్‌లో ఉంది",
+    paymentApprovedNotification: "నెల {{month}} కోసం మీ ₹{{amount}} చెల్లింపు ఆమోదించబడింది",
+    paymentRejectedNotification: "నెల {{month}} కోసం మీ ₹{{amount}} చెల్లింపు తిరస్కరించబడింది",
+    userNotDeleted: "వినియోగదారు ట్రాష్‌లో లేరు",
+    userAlreadyDeleted: "వినియోగదారు ఇప్పటికే ట్రాష్‌లో ఉన్నారు",
+    userNotInTrash: "వినియోగదారు ట్రాష్‌లో లేరు",
+    deviceRegistered: "పరికరం విజయవంతంగా నమోదు చేయబడింది"
+  },
+  kn: {
+    userNotFound: "ಬಳಕೆದಾರರು ಕಂಡುಬಂದಿಲ್ಲ",
+    userIdExists: "ಬಳಕೆದಾರ ಐಡಿ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ",
+    userDeleted: "ಬಳಕೆದಾರರನ್ನು ಅಳಿಸಲಾಗಿದೆ",
+    userMovedToTrash: "ಐಡಿ {{userId}} ಹೊಂದಿರುವ ಬಳಕೆದಾರರನ್ನು ಟ್ರ್ಯಾಶ್‌ಗೆ ಸರಿಸಲಾಗಿದೆ",
+    userRestored: "ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಮರುಸ್ಥಾಪಿಸಲಾಗಿದೆ",
+    userPermanentlyDeleted: "ಐಡಿ {{userId}} ಹೊಂದಿರುವ ಬಳಕೆದಾರರನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲಾಗಿದೆ",
+    userAdded: "ಬಳಕೆದಾರರನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ",
+    paymentAdded: "ಪಾವತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ",
+    paymentExists: "ಈ ತಿಂಗಳಿಗೆ ಪಾವತಿ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ",
+    pendingPaymentExists: "ಈ ತಿಂಗಳಿಗೆ ಬಾಕಿ ಇರುವ ಪಾವತಿ ವಿನಂತಿ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ",
+    transactionIdExists: "ವಹಿವಾಟು ಐಡಿ ಈಗಾಗಲೇ ಅಸ್ತಿತ್ವದಲ್ಲಿದೆ",
+    paymentRequestSubmitted: "ಪಾವತಿ ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ",
+    paymentApproved: "ಪಾವತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಅನುಮೋದಿಸಲಾಗಿದೆ",
+    paymentRejected: "ಪಾವತಿಯನ್ನು ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",
+    transactionNotFound: "ವಹಿವಾಟು ಕಂಡುಬಂದಿಲ್ಲ",
+    invalidCredentials: "ಅಮಾನ್ಯ ರುಜುವಾತುಗಳು",
+    languageUpdated: "ಭಾಷಾ ಆದ್ಯತೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ",
+    welcomeMessage: "ನಂಜುಂಡೇಶ್ವರ ಸ್ಟೋರ್ಸ್‌ಗೆ ಸುಸ್ವಾಗತ, {{name}}!",
+    paymentRecorded: "ತಿಂಗಳು {{month}} ಗಾಗಿ ನಿಮ್ಮ ₹{{amount}} ಪಾವತಿಯನ್ನು ದಾಖಲಿಸಲಾಗಿದೆ",
+    paymentRequestPending: "ತಿಂಗಳು {{month}} ಗಾಗಿ ನಿಮ್ಮ ₹{{amount}} ಪಾವತಿ ವಿನಂತಿಯು ಅನುಮೋದನೆಗಾಗಿ ಬಾಕಿ ಇದೆ",
+    paymentApprovedNotification: "ತಿಂಗಳು {{month}} ಗಾಗಿ ನಿಮ್ಮ ₹{{amount}} ಪಾವತಿಯನ್ನು ಅನುಮೋದಿಸಲಾಗಿದೆ",
+    paymentRejectedNotification: "ತಿಂಗಳು {{month}} ಗಾಗಿ ನಿಮ್ಮ ₹{{amount}} ಪಾವತಿಯನ್ನು ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",
+    userNotDeleted: "ಬಳಕೆದಾರರು ಟ್ರ್ಯಾಶ್‌ನಲ್ಲಿ ಇಲ್ಲ",
+    userAlreadyDeleted: "ಬಳಕೆದಾರರು ಈಗಾಗಲೇ ಟ್ರ್ಯಾಶ್‌ನಲ್ಲಿದ್ದಾರೆ",
+    userNotInTrash: "ಬಳಕೆದಾರರು ಟ್ರ್ಯಾಶ್‌ನಲ್ಲಿ ಇಲ್ಲ",
+    deviceRegistered: "ಸಾಧನವನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ"
+  },
+  ur: {
+    userNotFound: "صارف نہیں ملا",
+    userIdExists: "صارف آئی ڈی پہلے سے موجود ہے",
+    userDeleted: "صارف کو حذف کر دیا گیا ہے",
+    userMovedToTrash: "آئی ڈی {{userId}} والے صارف کو ٹریش میں منتقل کر دیا گیا ہے",
+    userRestored: "صارف کو کامیابی سے بحال کر دیا گیا",
+    userPermanentlyDeleted: "آئی ڈی {{userId}} والے صارف کو مستقل طور پر حذف کر دیا گیا ہے",
+    userAdded: "صارف کامیابی سے شامل کر دیا گیا",
+    paymentAdded: "ادائیگی کامیابی سے شامل کر دی گئی",
+    paymentExists: "اس مہینے کے لیے ادائیگی پہلے سے موجود ہے",
+    pendingPaymentExists: "اس مہینے کے لیے زیر التواء ادائیگی کی درخواست پہلے سے موجود ہے",
+    transactionIdExists: "لین دین کی آئی ڈی پہلے سے موجود ہے",
+    paymentRequestSubmitted: "ادائیگی کی درخواست کامیابی سے جمع کرا دی گئی",
+    paymentApproved: "ادائیگی کامیابی سے منظور کر دی گئی",
+    paymentRejected: "ادائیگی مسترد کر دی گئی",
+    transactionNotFound: "لین دین نہیں ملا",
+    invalidCredentials: "غلط اسناد",
+    languageUpdated: "زبان کی ترجیح کامیابی سے اپ ڈیٹ کر دی گئی",
+    welcomeMessage: "نانجندیشورا اسٹورز میں خوش آمدید، {{name}}!",
+    paymentRecorded: "مہینہ {{month}} کے لیے آپ کی ₹{{amount}} ادائیگی ریکارڈ کر لی گئی ہے",
+    paymentRequestPending: "مہینہ {{month}} کے لیے آپ کی ₹{{amount}} ادائیگی کی درخواست منظوری کے لیے زیر التواء ہے",
+    paymentApprovedNotification: "مہینہ {{month}} کے لیے آپ کی ₹{{amount}} ادائیگی منظور کر دی گئی ہے",
+    paymentRejectedNotification: "مہینہ {{month}} کے لیے آپ کی ₹{{amount}} ادائیگی مسترد کر دی گئی ہے",
+    userNotDeleted: "صارف ٹریش میں نہیں ہے",
+    userAlreadyDeleted: "صارف پہلے ہی ٹریش میں ہے",
+    userNotInTrash: "صارف ٹریش میں نہیں ہے",
+    deviceRegistered: "آلہ کامیابی سے رجسٹر ہو گیا"
   }
+};
 
-  return formattedMessage
-}
-
-// Main translation function
-function translate(key, lang = "en", variables) {
+// Function to translate a key
+function translate(key, lang = 'en', params = {}) {
   // Default to English if the language is not supported
-  const langData = translations[lang] || translations.en
-
-  // Return the key itself if translation is not found
-  const message = langData[key] || translations.en[key] || key
-
-  return formatMessage(message, variables)
+  const language = translations[lang] ? lang : 'en';
+  
+  // Get the translation
+  let translation = translations[language][key] || translations['en'][key] || key;
+  
+  // Replace parameters in the translation
+  Object.keys(params).forEach(param => {
+    translation = translation.replace(new RegExp(`{{${param}}}`, 'g'), params[param]);
+  });
+  
+  return translation;
 }
 
 module.exports = {
   translate,
-}
+  supportedLanguages: Object.keys(translations)
+};
