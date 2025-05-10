@@ -293,10 +293,10 @@ class _HomeScreenState extends State<HomeScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           // Language selection button
-          IconButton(
-            icon: Icon(Icons.language),
-            onPressed: _showLanguageDialog,
-          ),
+          // IconButton(
+          //   icon: Icon(Icons.language),
+          //   onPressed: _showLanguageDialog,
+          // ),
           if (widget.username != null)
             ElevatedButton(
               onPressed: () {
