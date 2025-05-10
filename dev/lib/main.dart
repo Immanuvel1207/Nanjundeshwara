@@ -641,7 +641,7 @@ class _LoginScreenState extends State<LoginScreen> {
       
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/login'),
+          Uri.parse('https://nanjundeshwara.vercel.app/login'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({'username': _username, 'password': _password}),
         );
@@ -933,7 +933,7 @@ class _TrashScreenState extends State<TrashScreen> {
     
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/deleted_users'),
+        Uri.parse('https://nanjundeshwara.vercel.app/deleted_users'),
       );
 
       if (response.statusCode == 200) {
@@ -963,7 +963,7 @@ class _TrashScreenState extends State<TrashScreen> {
   Future<void> _restoreUser(int userId) async {
     try {
       final response = await http.put(
-        Uri.parse('http://localhost:4000/restore_user/$userId'),
+        Uri.parse('https://nanjundeshwara.vercel.app/restore_user/$userId'),
       );
 
       if (response.statusCode == 200) {
@@ -986,7 +986,7 @@ class _TrashScreenState extends State<TrashScreen> {
   Future<void> _permanentlyDeleteUser(int userId) async {
     try {
       final response = await http.delete(
-        Uri.parse('http://localhost:4000/permanent_delete_user/$userId'),
+        Uri.parse('https://nanjundeshwara.vercel.app/permanent_delete_user/$userId'),
       );
 
       if (response.statusCode == 200) {
@@ -1115,7 +1115,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
 
   Future<void> _fetchPendingTransactions() async {
     try {
-      final url = Uri.parse('http://localhost:4000/pending_transactions');
+      final url = Uri.parse('https://nanjundeshwara.vercel.app/pending_transactions');
       print('Sending request to: $url'); // Log the request URL
 
       final response = await http.get(url);
@@ -1145,7 +1145,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
   Future<void> _approvePayment(String transactionId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/approve_payment'),
+        Uri.parse('https://nanjundeshwara.vercel.app/approve_payment'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'transactionId': transactionId}),
       );
@@ -1170,7 +1170,7 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
   Future<void> _rejectPayment(String transactionId) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/reject_payment'),
+        Uri.parse('https://nanjundeshwara.vercel.app/reject_payment'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'transactionId': transactionId}),
       );
@@ -1291,7 +1291,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _fetchVillages() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/get_all_villages'),
+        Uri.parse('https://nanjundeshwara.vercel.app/get_all_villages'),
       );
 
       if (response.statusCode == 200) {
@@ -1324,7 +1324,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/search_by_village?village=${_selectedVillage}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/search_by_village?village=${_selectedVillage}'),
       );
 
       if (response.statusCode == 200) {
@@ -1347,7 +1347,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _fetchInactiveCustomers() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/inactive_customers'),
+        Uri.parse('https://nanjundeshwara.vercel.app/inactive_customers'),
       );
 
       if (response.statusCode == 200) {
@@ -1371,7 +1371,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/add_user'),
+          Uri.parse('https://nanjundeshwara.vercel.app/add_user'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'userId': int.parse(_userIdController.text),
@@ -1410,7 +1410,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_user?userId=${_userIdController.text}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${_userIdController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -1478,7 +1478,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _deleteUser() async {
     try {
       final response = await http.delete(
-        Uri.parse('http://localhost:4000/delete_user/${_userIdController.text}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/delete_user/${_userIdController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -1501,7 +1501,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   Future<void> _viewAllUsers() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_all_users'),
+        Uri.parse('https://nanjundeshwara.vercel.app/find_all_users'),
       );
 
       if (response.statusCode == 200) {
@@ -1525,7 +1525,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost:4000/add_payments'),
+          Uri.parse('https://nanjundeshwara.vercel.app/add_payments'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'c_id': int.parse(_userIdController.text),
@@ -1562,7 +1562,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_payments?userIdPayments=${_userIdController.text}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/find_payments?userIdPayments=${_userIdController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -1591,7 +1591,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
 
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/view_payments_by_month?p_month=${_monthController.text}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/view_payments_by_month?p_month=${_monthController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -1619,7 +1619,7 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_user?userId=${_userIdController.text}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${_userIdController.text}'),
       );
 
       if (response.statusCode == 200) {
@@ -2170,7 +2170,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -2192,7 +2192,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchPayments() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_payments?userIdPayments=${widget.username}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/find_payments?userIdPayments=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -2214,7 +2214,7 @@ class _UserScreenState extends State<UserScreen> {
   Future<void> _fetchNotifications() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/notifications/${widget.username}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/notifications/${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -2417,7 +2417,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _fetchUserDetails() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:4000/find_user?userId=${widget.username}'),
+        Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${widget.username}'),
       );
 
       if (response.statusCode == 200) {
@@ -2440,7 +2440,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> _checkPaymentStatus() async {
     try {
       final url = Uri.parse(
-        'http://localhost:4000/check_payment_status?userId=${widget.username}&month=$_selectedMonth',
+        'https://nanjundeshwara.vercel.app/check_payment_status?userId=${widget.username}&month=$_selectedMonth',
       );
       
       final response = await http.get(url);
@@ -2474,7 +2474,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/request_payment'),
+        Uri.parse('https://nanjundeshwara.vercel.app/request_payment'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'userId': int.parse(widget.username),

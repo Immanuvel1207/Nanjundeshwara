@@ -198,7 +198,7 @@ class AppLocalizations {
   static Future<void> updateLanguageOnServer(String userId, String languageCode) async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/update_language'),
+        Uri.parse('https://nanjundeshwara.vercel.app/update_language'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'userId': int.parse(userId), 'language': languageCode}),
       );
@@ -242,7 +242,7 @@ class AppLocalizations {
     // Otherwise, fetch translations from API
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/translate-object'),
+        Uri.parse('https://nanjundeshwara.vercel.app/translate-object'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'object': _defaultEnglishTranslations,
@@ -341,7 +341,7 @@ class AppLocalizations {
     
     try {
       final response = await http.post(
-        Uri.parse('http://localhost:4000/translate'),
+        Uri.parse('https://nanjundeshwara.vercel.app/translate'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'text': text,
