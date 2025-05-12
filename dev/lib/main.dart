@@ -5,73 +5,171 @@ import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'l10n/app_localizations.dart';
+import 'package:flutter/services.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Get the saved locale
-  Locale locale = await AppLocalizations.getLocale();
-  
-  runApp(MyApp(locale: locale));
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  final Locale locale;
-  
-  MyApp({required this.locale});
-  
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  Locale _locale = const Locale('en', '');
-  
-  @override
-  void initState() {
-    super.initState();
-    _locale = widget.locale;
-  }
-  
-  void setLocale(Locale locale) {
-    setState(() {
-      _locale = locale;
-    });
-  }
-  
+  ThemeData _theme = AppTheme.lightTheme;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      locale: _locale,
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: SplashScreen(setLocale: setLocale),
+      title: 'SivaSakthi Stores',
+      theme: _theme,
+      home: SplashScreen(),
     );
   }
 }
 
+class AppTheme {
+  static const Color primaryColor = Color(0xFF5C2D91);
+  static const Color accentColor = Color(0xFFFF6B35);
+  static const Color backgroundColor = Color(0xFFF8F9FA);
+  static const Color cardColor = Colors.white;
+  static const Color textPrimary = Color(0xFF212529);
+  static const Color textSecondary = Color(0xFF6C757D);
+  static const Color success = Color(0xFF28A745);
+  static const Color danger = Color(0xFFDC3545);
+  static const Color warning = Color(0xFFFFC107);
+  static const Color info = Color(0xFF17A2B8);
+
+  static ThemeData lightTheme = ThemeData(
+    primaryColor: primaryColor,
+    colorScheme: ColorScheme.light(
+      primary: primaryColor,
+      secondary: accentColor,
+      background: backgroundColor,
+      surface: cardColor,
+    ),
+    scaffoldBackgroundColor: backgroundColor,
+    cardTheme: CardTheme(
+      color: cardColor,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: primaryColor,
+      elevation: 0,
+      centerTitle: true,
+      iconTheme: IconThemeData(color: Colors.white),
+      titleTextStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        elevation: 2,
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: primaryColor,
+        side: BorderSide(color: primaryColor),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: primaryColor,
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: primaryColor, width: 2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: danger, width: 1),
+      ),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    ),
+    textTheme: TextTheme(
+      displayLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+      displayMedium: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+      displaySmall: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+      headlineMedium: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+      headlineSmall: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+      titleLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+      titleMedium: TextStyle(color: textPrimary),
+      titleSmall: TextStyle(color: textSecondary),
+      bodyLarge: TextStyle(color: textPrimary),
+      bodyMedium: TextStyle(color: textPrimary),
+      bodySmall: TextStyle(color: textSecondary),
+      labelLarge: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+    ),
+    tabBarTheme: TabBarTheme(
+      labelColor: primaryColor,
+      unselectedLabelColor: textSecondary,
+      indicator: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: primaryColor, width: 2),
+        ),
+      ),
+    ),
+  );
+}
+
 class SplashScreen extends StatefulWidget {
-  final Function(Locale) setLocale;
-  
-  SplashScreen({required this.setLocale});
-  
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+    _controller.forward();
     checkLoginStatus();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   void checkLoginStatus() async {
@@ -82,7 +180,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen(username: username, isAdmin: isAdmin, setLocale: widget.setLocale)),
+        MaterialPageRoute(builder: (context) => HomeScreen(username: username, isAdmin: isAdmin)),
       );
     });
   }
@@ -90,40 +188,88 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueGrey,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // FIXED: Added error handling for splash screen image
-            Image.asset(
-              'assets/jerry.gif',
-              height: 150,
-              width: 150,
-              errorBuilder: (context, error, stackTrace) {
-                print('Error loading splash image: $error');
-                return Container(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppTheme.primaryColor,
+              Color(0xFF3A1D5B),
+            ],
+          ),
+        ),
+        child: Center(
+          child: FadeTransition(
+            opacity: _animation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo with error handling
+                Container(
                   height: 150,
                   width: 150,
-                  color: Colors.grey[300],
-                  child: Icon(Icons.image_not_supported, size: 50, color: Colors.white),
-                );
-              },
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(75),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(75),
+                    child: Image.asset(
+                      'assets/jerry.gif',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Error loading splash image: $error');
+                        return Container(
+                          color: Colors.white,
+                          child: Icon(
+                            Icons.store,
+                            size: 80,
+                            color: AppTheme.primaryColor,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Sri SivaSakthi Stores',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Diwali Chits & More',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white.withOpacity(0.8),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 3,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              AppLocalizations.of(context).translate('app_name'),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.orangeAccent),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -133,91 +279,92 @@ class _SplashScreenState extends State<SplashScreen> {
 class HomeScreen extends StatefulWidget {
   final String? username;
   final bool? isAdmin;
-  final Function(Locale) setLocale;
   
-  HomeScreen({this.username, this.isAdmin, required this.setLocale});
+  HomeScreen({this.username, this.isAdmin});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final String shopName = "Sri SivaSakthi Stores";
+  final String shopName = "SivaSakthi Stores";
   final String ownerName = "Mr. Madhu Kumar";
   final String phoneNumber = "+91 9080660749";
   final String serviceDescription = "Specialized in Diwali Chits with various categories to choose from.";
-  final String address = "Sri SivaSakthi Stores, Konganapalli Road, Opposite to Aishwarya Hotel, Veppanapalli 635 121";
+  final String address = "SivaSakthi Stores, Konganapalli Road, Opposite to Aishwarya Hotel, Veppanapalli 635 121";
   final String mapUrl = "https://maps.app.goo.gl/44evAN22mo1KNfTc7";
 
   late List<Map<String, dynamic>> categories;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    categories = getCategories();
     // Add this to debug images after the first frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _debugImages();
+      setState(() {
+        _isLoading = false;
+      });
     });
   }
 
-  List<Map<String, dynamic>> getLocalizedCategories(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    
+  List<Map<String, dynamic>> getCategories() {
     return [
       {
-        "title": appLocalizations.translate('gold_category'),
-        "amount": "₹500 " + appLocalizations.translate('per_month'),
+        "title": "Gold Category",
+        "amount": "₹500 per month",
         "color": "blue",
         "products": [
-          {"name": appLocalizations.translate('rice'), "quantity": "25 Kg", "image": "assets/things/ricejpg.jpg"},
-          {"name": appLocalizations.translate('maida'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/maida.jpg"},
-          {"name": appLocalizations.translate('oil'), "quantity": "5 " + appLocalizations.translate('liters'), "image": "assets/things/oil.jpg"},
-          {"name": appLocalizations.translate('wheat_flour'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/atta.jpg"},
-          {"name": appLocalizations.translate('white_dhall'), "quantity": "3 Kg", "image": "assets/things/whitedall.jpg"},
-          {"name": appLocalizations.translate('rice_raw'), "quantity": "3 Kg", "image": "assets/things/riceraw.jpg"},
-          {"name": appLocalizations.translate('semiya'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/semiya.jpg"},
-          {"name": appLocalizations.translate('payasam_mix'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/payasam.jpg"},
-          {"name": appLocalizations.translate('sugar'), "quantity": "1 Kg", "image": "assets/things/sugar.jpg"},
-          {"name": appLocalizations.translate('sesame_oil'), "quantity": "150 " + appLocalizations.translate('grams'), "image": "assets/things/sesame.jpg"},
-          {"name": appLocalizations.translate('tamarind'), "quantity": "25 " + appLocalizations.translate('pieces'), "image": "assets/things/tamrind.jpg"},
-          {"name": appLocalizations.translate('dry_chilli'), "quantity": "25 " + appLocalizations.translate('pieces'), "image": "assets/things/chilly.jpg"},
-          {"name": appLocalizations.translate('coriander_seeds'), "quantity": "11 " + appLocalizations.translate('pieces'), "image": "assets/things/coriander.jpg"},
-          {"name": appLocalizations.translate('salt'), "quantity": "1/2 Kg", "image": "assets/things/salt.jpg"},
-          {"name": appLocalizations.translate('jaggery'), "quantity": "1/2 Kg", "image": "assets/things/jaggery.jpg"},
-          {"name": appLocalizations.translate('pattasu_box'), "quantity": "1 " + appLocalizations.translate('box'), "image": "assets/things/pattasu.jpg"},
-          {"name": appLocalizations.translate('matches_box'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/match.jpg"},
-          {"name": appLocalizations.translate('turmeric_powder'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/tumeric.jpg"},
-          {"name": appLocalizations.translate('kumkum'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/kumkumjpg.jpg"},
-          {"name": appLocalizations.translate('camphor'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/camphor.jpg"}
+          {"name": "Rice", "quantity": "25 Kg", "image": "assets/things/ricejpg.jpg"},
+          {"name": "Maida", "quantity": "1 pack", "image": "assets/things/maida.jpg"},
+          {"name": "Oil", "quantity": "5 liters", "image": "assets/things/oil.jpg"},
+          {"name": "Wheat Flour", "quantity": "1 pack", "image": "assets/things/atta.jpg"},
+          {"name": "White Dhall", "quantity": "3 Kg", "image": "assets/things/whitedall.jpg"},
+          {"name": "Rice Raw", "quantity": "3 Kg", "image": "assets/things/riceraw.jpg"},
+          {"name": "Semiya", "quantity": "1 pack", "image": "assets/things/semiya.jpg"},
+          {"name": "Payasam Mix", "quantity": "1 pack", "image": "assets/things/payasam.jpg"},
+          {"name": "Sugar", "quantity": "1 Kg", "image": "assets/things/sugar.jpg"},
+          {"name": "Sesame Oil", "quantity": "150 grams", "image": "assets/things/sesame.jpg"},
+          {"name": "Tamarind", "quantity": "25 pieces", "image": "assets/things/tamrind.jpg"},
+          {"name": "Dry Chilli", "quantity": "25 pieces", "image": "assets/things/chilly.jpg"},
+          {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "assets/things/coriander.jpg"},
+          {"name": "Salt", "quantity": "1/2 Kg", "image": "assets/things/salt.jpg"},
+          {"name": "Jaggery", "quantity": "1/2 Kg", "image": "assets/things/jaggery.jpg"},
+          {"name": "Pattasu Box", "quantity": "1 box", "image": "assets/things/pattasu.jpg"},
+          {"name": "Matches Box", "quantity": "1 pack", "image": "assets/things/match.jpg"},
+          {"name": "Turmeric Powder", "quantity": "1 pack", "image": "assets/things/tumeric.jpg"},
+          {"name": "Kumkum", "quantity": "1 pack", "image": "assets/things/kumkumjpg.jpg"},
+          {"name": "Camphor", "quantity": "1 pack", "image": "assets/things/camphor.jpg"}
         ],
       },
       {
-        "title": appLocalizations.translate('silver_category'),
-        "amount": "₹300 " + appLocalizations.translate('per_month'),
+        "title": "Silver Category",
+        "amount": "₹300 per month",
         "color": "yellow",
         "products": [
-          {"name": appLocalizations.translate('rice'), "quantity": "5 Kg", "image": "assets/things/ricejpg.jpg"},
-          {"name": appLocalizations.translate('oil'), "quantity": "5 " + appLocalizations.translate('liters'), "image": "assets/things/oil.jpg"},
-          {"name": appLocalizations.translate('white_dhall'), "quantity": "5 Kg", "image": "assets/things/whitedall.jpg"},
-          {"name": appLocalizations.translate('sesame_oil'), "quantity": "250 " + appLocalizations.translate('grams'), "image": "assets/things/sesame.jpg"},
-          {"name": appLocalizations.translate('tamarind'), "quantity": "25 " + appLocalizations.translate('pieces'), "image": "assets/things/tamrind.jpg"},
-          {"name": appLocalizations.translate('dry_chilli'), "quantity": "25 " + appLocalizations.translate('pieces'), "image": "assets/things/chilly.jpg"},
-          {"name": appLocalizations.translate('coriander_seeds'), "quantity": "11 " + appLocalizations.translate('pieces'), "image": "assets/things/coriander.jpg"},
-          {"name": appLocalizations.translate('maida'), "quantity": "5 Kg", "image": "assets/things/maida.jpg"},
-          {"name": appLocalizations.translate('wheat_flour'), "quantity": "5 Kg", "image": "assets/things/atta.jpg"},
-          {"name": appLocalizations.translate('oil'), "quantity": "1/2 " + appLocalizations.translate('liter'), "image": "assets/things/oil.jpg"},
-          {"name": appLocalizations.translate('semiya'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/semiya.jpg"},
-          {"name": appLocalizations.translate('matches_box'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/match.jpg"},
-          {"name": appLocalizations.translate('turmeric_powder'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/tumeric.jpg"},
-          {"name": appLocalizations.translate('kumkum'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/kumkumjpg.jpg"},
-          {"name": appLocalizations.translate('camphor'), "quantity": "1 " + appLocalizations.translate('pack'), "image": "assets/things/camphor.jpg"}
+          {"name": "Rice", "quantity": "5 Kg", "image": "assets/things/ricejpg.jpg"},
+          {"name": "Oil", "quantity": "5 liters", "image": "assets/things/oil.jpg"},
+          {"name": "White Dhall", "quantity": "5 Kg", "image": "assets/things/whitedall.jpg"},
+          {"name": "Sesame Oil", "quantity": "250 grams", "image": "assets/things/sesame.jpg"},
+          {"name": "Tamarind", "quantity": "25 pieces", "image": "assets/things/tamrind.jpg"},
+          {"name": "Dry Chilli", "quantity": "25 pieces", "image": "assets/things/chilly.jpg"},
+          {"name": "Coriander Seeds", "quantity": "11 pieces", "image": "assets/things/coriander.jpg"},
+          {"name": "Maida", "quantity": "5 Kg", "image": "assets/things/maida.jpg"},
+          {"name": "Wheat Flour", "quantity": "5 Kg", "image": "assets/things/atta.jpg"},
+          {"name": "Oil", "quantity": "1/2 liter", "image": "assets/things/oil.jpg"},
+          {"name": "Semiya", "quantity": "1 pack", "image": "assets/things/semiya.jpg"},
+          {"name": "Matches Box", "quantity": "1 pack", "image": "assets/things/match.jpg"},
+          {"name": "Turmeric Powder", "quantity": "1 pack", "image": "assets/things/tumeric.jpg"},
+          {"name": "Kumkum", "quantity": "1 pack", "image": "assets/things/kumkumjpg.jpg"},
+          {"name": "Camphor", "quantity": "1 pack", "image": "assets/things/camphor.jpg"}
         ],
       }
     ];
   }
 
   Future<void> _debugImages() async {
-    categories = getLocalizedCategories(context);
     for (var category in categories) {
       for (var product in category['products']) {
         try {
@@ -229,292 +376,498 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _showLanguageDialog() {
-    final appLocalizations = AppLocalizations.of(context);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(appLocalizations.translate('language_settings')),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildLanguageOption('English', 'en'),
-              _buildLanguageOption('தமிழ்', 'ta'),
-              _buildLanguageOption('हिंदी', 'hi'),
-              _buildLanguageOption('తెలుగు', 'te'),
-              _buildLanguageOption('ಕನ್ನಡ', 'kn'),
-              _buildLanguageOption('اردو', 'ur'),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLanguageOption(String name, String code) {
-    return ListTile(
-      title: Text(name),
-      onTap: () async {
-        // Save the selected language
-        await AppLocalizations.setLocale(code);
-        
-        // Update the app locale
-        widget.setLocale(Locale(code, ''));
-        
-        // If user is logged in, update language preference on server
-        if (widget.username != null) {
-          await AppLocalizations.updateLanguageOnServer(widget.username!, code);
-        }
-        
-        Navigator.of(context).pop();
-        
-        // Refresh categories with new language
-        setState(() {
-          categories = getLocalizedCategories(context);
-        });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('language_updated'))),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    categories = getLocalizedCategories(context);
+    if (_isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+          ),
+        ),
+      );
+    }
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(shopName, style: const TextStyle(color: Colors.white)),
-        backgroundColor: Colors.deepPurple,
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(shopName),
         actions: [
-          // Language selection button
-          // IconButton(
-          //   icon: Icon(Icons.language),
-          //   onPressed: _showLanguageDialog,
-          // ),
           if (widget.username != null)
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => widget.isAdmin == true
-                        ? AdminScreen(setLocale: widget.setLocale)
-                        : UserScreen(username: widget.username!, setLocale: widget.setLocale),
-                  ),
-                );
-              },
-              child: Text(appLocalizations.translate('actions')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.deepPurple,
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => widget.isAdmin == true
+                          ? AdminScreen()
+                          : UserScreen(username: widget.username!),
+                    ),
+                  );
+                },
+                icon: Icon(Icons.dashboard, size: 18),
+                label: Text("Dashboard"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.primaryColor,
+                  elevation: 0,
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
               ),
             )
           else
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen(setLocale: widget.setLocale)),
-                );
-              },
-              child: Text(appLocalizations.translate('login')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.deepPurple,
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                },
+                icon: Icon(Icons.login, size: 18),
+                label: Text("Login"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppTheme.primaryColor,
+                  elevation: 0,
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
               ),
             ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            categories = getCategories();
+          });
+          await _debugImages();
+        },
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Column(
+              // Hero Banner
+              Container(
+                height: 200,
+                width: double.infinity,
+                child: Stack(
                   children: [
                     Image.asset(
                       'assets/shop.jpg',
-                      height: 150,
+                      width: double.infinity,
+                      height: 200,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          height: 150,
+                          height: 200,
                           width: double.infinity,
                           color: Colors.grey[300],
-                          child: Icon(Icons.store, size: 50, color: Colors.grey[600]),
+                          child: Icon(Icons.store, size: 80, color: Colors.grey[600]),
                         );
                       },
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      shopName,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withOpacity(0.7),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 20,
+                      left: 120,
+                      right: 100,
+                      top: 0,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            "",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 20),
+              // People Section
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  buildPersonCard(appLocalizations.translate('nanjappan'), appLocalizations.translate('honoured'), 'assets/father.jpg'),
-                  buildPersonCard(ownerName, appLocalizations.translate('owner'), 'assets/owner.jpg'),
-                  buildPersonCard(appLocalizations.translate('suselamma'), appLocalizations.translate('honoured'), 'assets/mother.jpg'),
-                ],
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        buildPersonCard("Nanjappan", "Honoured", 'assets/father.jpg'),
+                        buildPersonCard(ownerName, "Owner", 'assets/owner.jpg'),
+                        buildPersonCard("Suselamma", "Honoured", 'assets/mother.jpg'),
+                      ],
+                    ),
+                  ],
+                ),
               ),
 
-              const SizedBox(height: 20),
-
-              Text(appLocalizations.translate('address') + ':', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              Text(address, style: TextStyle(fontSize: 15)),
-
-              const SizedBox(height: 14),
-
-              /// SMALL BUTTONS SECTION
-              Row(
-                children: [
-                  SizedBox(
-                    height: 36,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        // FIXED: Improved directions functionality
-                        try {
-                          // First check if we have location permission
-                          LocationPermission permission = await Geolocator.checkPermission();
-                          if (permission == LocationPermission.denied) {
-                            permission = await Geolocator.requestPermission();
-                            if (permission == LocationPermission.denied) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(appLocalizations.translate('location_permission_denied'))),
-                              );
-                              return;
-                            }
-                          }
-                          
-                          if (permission == LocationPermission.deniedForever) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(appLocalizations.translate('location_permission_permanently_denied'))),
-                            );
-                            return;
-                          }
-                          
-                          // Try to open Google Maps app first
-                          final Uri googleMapsUri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=Veppanapalli&destination_place_id=ChIJXbGmYHVdqzsRCLLuI0YpO_A');
-                          if (await canLaunchUrl(googleMapsUri)) {
-                            await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
-                          } else {
-                            // Fallback to web URL
-                            final Uri webUri = Uri.parse('https://maps.app.goo.gl/44evAN22mo1KNfTc7');
-                            if (await canLaunchUrl(webUri)) {
-                              await launchUrl(webUri, mode: LaunchMode.externalApplication);
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(appLocalizations.translate('could_not_open_maps'))),
-                              );
-                            }
-                          }
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(appLocalizations.translate('error_opening_maps') + ': $e')),
-                          );
-                        }
-                      },
-                      icon: Icon(Icons.directions, size: 16),
-                      label: Text(appLocalizations.translate('directions'), style: TextStyle(fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[700],
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+              // Address & Contact Section
+              Container(
+                padding: EdgeInsets.all(16),
+                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: Offset(0, 5),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    height: 36,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        // FIXED: Improved phone call functionality
-                        try {
-                          final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-                          if (await canLaunchUrl(phoneUri)) {
-                            await launchUrl(phoneUri);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(appLocalizations.translate('cannot_open_phone_dialer'))),
-                            );
-                          }
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(appLocalizations.translate('error_making_phone_call') + ': $e')),
-                          );
-                        }
-                      },
-                      icon: Icon(Icons.phone, size: 16),
-                      label: Text(appLocalizations.translate('call'), style: TextStyle(fontSize: 14)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.location_on, color: AppTheme.primaryColor),
+                        SizedBox(width: 8),
+                        Text(
+                          "Address",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              /// Service Description
-              Text(appLocalizations.translate('service_description'), style: TextStyle(fontSize: 15)),
-              const SizedBox(height: 20),
-
-              /// Categories
-              Text(appLocalizations.translate('categories') + ':', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-
-              Column(
-                children: categories.map((category) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    elevation: 3,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    child: ListTile(
-                      title: Text(category['title'], style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                      subtitle: Text(category['amount'], style: TextStyle(fontSize: 14)),
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CategoryDetailsPage(category: category),
+                    SizedBox(height: 8),
+                    Text(
+                      address,
+                      style: TextStyle(fontSize: 15, height: 1.4),
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              try {
+                                LocationPermission permission = await Geolocator.checkPermission();
+                                if (permission == LocationPermission.denied) {
+                                  permission = await Geolocator.requestPermission();
+                                  if (permission == LocationPermission.denied) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Location permission denied')),
+                                    );
+                                    return;
+                                  }
+                                }
+                                
+                                if (permission == LocationPermission.deniedForever) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Location permission permanently denied')),
+                                  );
+                                  return;
+                                }
+                                
+                                final Uri googleMapsUri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=Veppanapalli&destination_place_id=ChIJXbGmYHVdqzsRCLLuI0YpO_A');
+                                if (await canLaunchUrl(googleMapsUri)) {
+                                  await launchUrl(googleMapsUri, mode: LaunchMode.externalApplication);
+                                } else {
+                                  final Uri webUri = Uri.parse('https://maps.app.goo.gl/44evAN22mo1KNfTc7');
+                                  if (await canLaunchUrl(webUri)) {
+                                    await launchUrl(webUri, mode: LaunchMode.externalApplication);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Could not open maps')),
+                                    );
+                                  }
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error opening maps: $e')),
+                                );
+                              }
+                            },
+                            icon: Icon(Icons.directions),
+                            label: Text("Directions"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue[700],
                             ),
-                          );
-                        },
-                        child: Text(appLocalizations.translate('view_more')),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          textStyle: TextStyle(fontSize: 13),
-                          backgroundColor: Colors.deepPurple,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              try {
+                                final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+                                if (await canLaunchUrl(phoneUri)) {
+                                  await launchUrl(phoneUri);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Cannot open phone dialer')),
+                                  );
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error making phone call: $e')),
+                                );
+                              }
+                            },
+                            icon: Icon(Icons.phone),
+                            label: Text("Call Us"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[700],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Service Description
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.primaryColor.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "About Our Service",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.primaryColor,
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
+                      SizedBox(height: 8),
+                      Text(
+                        serviceDescription,
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
+
+              // Categories Section
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Our Categories",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: category["title"] == "Gold Category" 
+                                      ? Color(0xFFFFD700).withOpacity(0.2)
+                                      : Color(0xFFC0C0C0).withOpacity(0.2),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(12),
+                                    topRight: Radius.circular(12),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      category["title"] == "Gold Category" 
+                                          ? Icons.star
+                                          : Icons.star_half,
+                                      color: category["title"] == "Gold Category" 
+                                          ? Color(0xFFFFD700)
+                                          : Color(0xFFC0C0C0),
+                                      size: 28,
+                                    ),
+                                    SizedBox(width: 12),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          category["title"],
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          category["amount"],
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Spacer(),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => CategoryDetailsPage(category: category),
+                                          ),
+                                        );
+                                      },
+                                      child: Text("View Products"),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: category["title"] == "Gold Category" 
+                                            ? Color(0xFFFFD700)
+                                            : Color(0xFFC0C0C0),
+                                        foregroundColor: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Featured Products:",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    SizedBox(height: 12),
+                                    SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: List.generate(
+                                          category["products"].length > 5 ? 5 : category["products"].length,
+                                          (productIndex) {
+                                            final product = category["products"][productIndex];
+                                            return Container(
+                                              width: 120,
+                                              margin: EdgeInsets.only(right: 12),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  ClipRRect(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    child: Image.asset(
+                                                      product["image"],
+                                                      height: 80,
+                                                      width: 120,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (context, error, stackTrace) {
+                                                        return Container(
+                                                          height: 80,
+                                                          width: 120,
+                                                          color: Colors.grey[200],
+                                                          child: Icon(Icons.image_not_supported, color: Colors.grey[400]),
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 8),
+                                                  Text(
+                                                    product["name"],
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 14,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  Text(
+                                                    product["quantity"],
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: AppTheme.textSecondary,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              
+              
             ],
           ),
         ),
@@ -523,33 +876,61 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildPersonCard(String name, String role, String imagePath) {
-    return Column(
-      children: [
-        // FIXED: Added error handling for person images
-        Image.asset(
-          imagePath, 
-          height: 100, 
-          width: 100,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            print('Error loading person image: $imagePath - $error');
-            return Container(
-              height: 100,
-              width: 100,
-              color: Colors.grey[300],
-              child: Icon(Icons.person, size: 50, color: Colors.grey[600]),
-            );
-          },
-        ),
-        const SizedBox(height: 5),
-        Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        Text(role, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-      ],
+    return Container(
+      width: 100,
+      child: Column(
+        children: [
+          Container(
+            height: 100,
+            width: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppTheme.primaryColor, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                imagePath, 
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  print('Error loading person image: $imagePath - $error');
+                  return Container(
+                    color: Colors.grey[300],
+                    child: Icon(Icons.person, size: 50, color: Colors.grey[600]),
+                  );
+                },
+              ),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            name,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            role,
+            style: TextStyle(
+              fontSize: 14,
+              color: AppTheme.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }
 
-// FIXED: CategoryDetailsPage with proper image loading
 class CategoryDetailsPage extends StatelessWidget {
   final Map<String, dynamic> category;
 
@@ -557,327 +938,593 @@ class CategoryDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    
     return Scaffold(
       appBar: AppBar(
         title: Text(category['title']),
-        backgroundColor: Colors.deepPurple,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              category['title'],
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Container(
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: category["title"] == "Gold Category" 
+                  ? Color(0xFFFFD700).withOpacity(0.2)
+                  : Color(0xFFC0C0C0).withOpacity(0.2),
             ),
-            Text(
-              category['amount'],
-              style: const TextStyle(fontSize: 18, color: Colors.grey),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    category["title"] == "Gold Category" 
+                        ? Icons.star
+                        : Icons.star_half,
+                    color: category["title"] == "Gold Category" 
+                        ? Color(0xFFFFD700)
+                        : Color(0xFFC0C0C0),
+                    size: 32,
+                  ),
+                ),
+                SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      category["title"],
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      category["amount"],
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              appLocalizations.translate('products') + ':',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          
+          // Products Count
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Text(
+                  "Products",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    "${category['products'].length}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
+          ),
+          
+          // Products Grid
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 0.75,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
                 itemCount: category['products'].length,
                 itemBuilder: (context, index) {
                   final product = category['products'][index];
-                  return Card(
-                    elevation: 5,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      leading: Image.asset(
-                        product['image'],
-                        height: 60,
-                        width: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          print('Error loading product image: ${product['image']} - $error');
-                          return Container(
-                            height: 60,
-                            width: 60,
-                            color: Colors.grey[300],
-                            child: Icon(Icons.image_not_supported, color: Colors.grey[600]),
-                          );
-                        },
-                      ),
-                      title: Text(product['name']),
-                      subtitle: Text(product['quantity']),
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                          child: Image.asset(
+                            product['image'],
+                            height: 120,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              print('Error loading product image: ${product['image']} - $error');
+                              return Container(
+                                height: 120,
+                                width: double.infinity,
+                                color: Colors.grey[200],
+                                child: Icon(Icons.image_not_supported, size: 40, color: Colors.grey[400]),
+                              );
+                            },
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product['name'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: 4),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  product['quantity'],
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 },
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class LoginScreen extends StatefulWidget {
-  final Function(Locale) setLocale;
-  
-  LoginScreen({required this.setLocale});
-  
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _username = '';
-  String _password = '';
+  final _userIdController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
+      setState(() {
+        _isLoading = true;
+      });
       
       try {
         final response = await http.post(
           Uri.parse('https://nanjundeshwara.vercel.app/login'),
           headers: {'Content-Type': 'application/json'},
-          body: json.encode({'username': _username, 'password': _password}),
+          body: json.encode({
+            'username': _userIdController.text, 
+            'password': _passwordController.text
+          }),
         );
+
+        setState(() {
+          _isLoading = false;
+        });
 
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           if (data['success']) {
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('username', _username);
+            await prefs.setString('username', _userIdController.text);
             await prefs.setBool('isAdmin', data['isAdmin']);
-            
-            // Save the language preference if available
-            if (data['language'] != null) {
-              await AppLocalizations.setLocale(data['language']);
-              widget.setLocale(Locale(data['language'], ''));
-            }
 
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => HomeScreen(username: _username, isAdmin: data['isAdmin'], setLocale: widget.setLocale)),
+              MaterialPageRoute(builder: (context) => HomeScreen(
+                username: _userIdController.text, 
+                isAdmin: data['isAdmin']
+              )),
             );
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(AppLocalizations.of(context).translate('invalid_credentials'))),
-            );
+            _showErrorSnackBar('Invalid credentials');
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).translate('login_failed'))),
-          );
+          _showErrorSnackBar('Login failed. Please try again.');
         }
       } catch (e) {
-        print('Error during login: $e');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('error_occurred'))),
-        );
+        setState(() {
+          _isLoading = false;
+        });
+        _showErrorSnackBar('An error occurred: $e');
       }
     }
   }
 
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.danger,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _userIdController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    
     return Scaffold(
       appBar: AppBar(
-        title: Text(appLocalizations.translate('login')),
-        backgroundColor: Colors.deepPurple,
-        actions: [
-          // Language selection button
-          IconButton(
-            icon: Icon(Icons.language),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text(appLocalizations.translate('language_settings')),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildLanguageOption('English', 'en'),
-                        _buildLanguageOption('தமிழ்', 'ta'),
-                        _buildLanguageOption('हिंदी', 'hi'),
-                        _buildLanguageOption('తెలుగు', 'te'),
-                        _buildLanguageOption('ಕನ್ನಡ', 'kn'),
-                        _buildLanguageOption('اردو', 'ur'),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
+        title: Text('Login'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
-                keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_user_id') : null,
-                onSaved: (value) => _username = value!,
-              ),
-              TextFormField(
-                decoration: InputDecoration(labelText: appLocalizations.translate('phone_number')),
-                keyboardType: TextInputType.phone,
-                obscureText: true,
-                validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_phone_number') : null,
-                onSaved: (value) => _password = value!,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _login,
-                child: Text(appLocalizations.translate('login')),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  foregroundColor: Colors.white,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Logo
+                    Container(
+                      height: 100,
+                      width: 100,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.store,
+                        size: 60,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    
+                    // Title
+                    Text(
+                      'Welcome Back',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Sign in to your account',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppTheme.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 32),
+                    
+                    // User ID Field
+                    TextFormField(
+                      controller: _userIdController,
+                      decoration: InputDecoration(
+                        labelText: 'User ID',
+                        hintText: 'Enter your user ID',
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Please enter your user ID' : null,
+                    ),
+                    SizedBox(height: 16),
+                    
+                    // Password Field
+                    TextFormField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        hintText: 'Enter your phone number',
+                        prefixIcon: Icon(Icons.phone_android),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                      keyboardType: TextInputType.phone,
+                      obscureText: _obscurePassword,
+                      validator: (value) => value!.isEmpty ? 'Please enter your phone number' : null,
+                    ),
+                    SizedBox(height: 24),
+                    
+                    // Login Button
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      child: _isLoading
+                          ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : Text('Login'),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    
+                    // Back to Home
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text('Back to Home'),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
-  
-  Widget _buildLanguageOption(String name, String code) {
-    return ListTile(
-      title: Text(name),
-      onTap: () async {
-        // Save the selected language
-        await AppLocalizations.setLocale(code);
-        
-        // Update the app locale
-        widget.setLocale(Locale(code, ''));
-        
-        Navigator.of(context).pop();
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('language_updated'))),
-        );
-      },
-    );
-  }
 }
 
 class AdminScreen extends StatelessWidget {
-  final Function(Locale) setLocale;
-  
-  AdminScreen({required this.setLocale});
-  
   Future<void> _logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen(setLocale: setLocale)),
+      MaterialPageRoute(builder: (context) => HomeScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    
     return Scaffold(
       appBar: AppBar(
-        title: Text(appLocalizations.translate('admin_dashboard')),
-        backgroundColor: Colors.deepPurple,
-        actions: [
-          // Language selection button
-          IconButton(
-            icon: Icon(Icons.language),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text(appLocalizations.translate('language_settings')),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildLanguageOption(context, 'English', 'en'),
-                        _buildLanguageOption(context, 'தமிழ்', 'ta'),
-                        _buildLanguageOption(context, 'हिंदी', 'hi'),
-                        _buildLanguageOption(context, 'తెలుగు', 'te'),
-                        _buildLanguageOption(context, 'ಕನ್ನಡ', 'kn'),
-                        _buildLanguageOption(context, 'اردو', 'ur'),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
+        title: Text('Admin Dashboard'),
       ),
-      body: Center(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Admin Header
+                Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryColor,
+                        Color(0xFF3A1D5B),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.admin_panel_settings,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Welcome, Admin!',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Manage your store operations',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 24),
+                
+                // Admin Actions
+                Text(
+                  'Quick Actions',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 16),
+                
+                // Admin Cards Grid
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 1.1,
+                  children: [
+                    _buildAdminActionCard(
+                      context,
+                      'Operations',
+                      Icons.settings,
+                      Colors.blue,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => AdminOperationsScreen()),
+                        );
+                      },
+                    ),
+                    _buildAdminActionCard(
+                      context,
+                      'Pending Payments',
+                      Icons.payment,
+                      Colors.green,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => AdminPaymentApprovalScreen()),
+                        );
+                      },
+                    ),
+                    _buildAdminActionCard(
+                      context,
+                      'Trash',
+                      Icons.delete,
+                      Colors.red,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => TrashScreen()),
+                        );
+                      },
+                    ),
+                    _buildAdminActionCard(
+                      context,
+                      'Logout',
+                      Icons.logout,
+                      Colors.grey,
+                      () => _logout(context),
+                    ),
+                  ],
+                ),
+                
+                SizedBox(height: 24),
+                
+                
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAdminActionCard(
+    BuildContext context, 
+    String title, 
+    IconData icon, 
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(appLocalizations.translate('welcome') + ', Admin!', style: TextStyle(fontSize: 24)),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AdminOperationsScreen(setLocale: setLocale)),
-                );
-              },
-              child: Text(appLocalizations.translate('operations')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 32,
               ),
             ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AdminPaymentApprovalScreen(setLocale: setLocale)),
-                );
-              },
-              child: Text(appLocalizations.translate('pending_payments')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            SizedBox(height: 10),
-            // NEW: Added Trash button
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => TrashScreen(setLocale: setLocale)),
-                );
-              },
-              child: Text(appLocalizations.translate('trash')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[700],
-                foregroundColor: Colors.white,
-              ),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () => _logout(context),
-              child: Text(appLocalizations.translate('logout')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
+            SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -885,33 +1532,63 @@ class AdminScreen extends StatelessWidget {
       ),
     );
   }
-  
-  Widget _buildLanguageOption(BuildContext context, String name, String code) {
-    return ListTile(
-      title: Text(name),
-      onTap: () async {
-        // Save the selected language
-        await AppLocalizations.setLocale(code);
-        
-        // Update the app locale
-        setLocale(Locale(code, ''));
-        
-        Navigator.of(context).pop();
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('language_updated'))),
-        );
-      },
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-// NEW: Added TrashScreen to manage deleted users
 class TrashScreen extends StatefulWidget {
-  final Function(Locale) setLocale;
-  
-  TrashScreen({required this.setLocale});
-  
   @override
   _TrashScreenState createState() => _TrashScreenState();
 }
@@ -944,7 +1621,10 @@ class _TrashScreenState extends State<TrashScreen> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch deleted users: ${response.body}')),
+          SnackBar(
+            content: Text('Failed to fetch deleted users: ${response.body}'),
+            backgroundColor: AppTheme.danger,
+          ),
         );
         setState(() {
           _isLoading = false;
@@ -952,7 +1632,10 @@ class _TrashScreenState extends State<TrashScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(
+          content: Text('An error occurred: $e'),
+          backgroundColor: AppTheme.danger,
+        ),
       );
       setState(() {
         _isLoading = false;
@@ -968,17 +1651,26 @@ class _TrashScreenState extends State<TrashScreen> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('user_restored'))),
+          SnackBar(
+            content: Text('User restored successfully'),
+            backgroundColor: AppTheme.success,
+          ),
         );
         _fetchDeletedUsers(); // Refresh the list
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to restore user: ${response.body}')),
+          SnackBar(
+            content: Text('Failed to restore user: ${response.body}'),
+            backgroundColor: AppTheme.danger,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(
+          content: Text('An error occurred: $e'),
+          backgroundColor: AppTheme.danger,
+        ),
       );
     }
   }
@@ -991,47 +1683,55 @@ class _TrashScreenState extends State<TrashScreen> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('user_permanently_deleted'))),
+          SnackBar(
+            content: Text('User permanently deleted'),
+            backgroundColor: AppTheme.success,
+          ),
         );
         _fetchDeletedUsers(); // Refresh the list
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to permanently delete user: ${response.body}')),
+          SnackBar(
+            content: Text('Failed to permanently delete user: ${response.body}'),
+            backgroundColor: AppTheme.danger,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(
+          content: Text('An error occurred: $e'),
+          backgroundColor: AppTheme.danger,
+        ),
       );
     }
   }
 
   void _showDeleteConfirmationDialog(int userId, String userName) {
-    final appLocalizations = AppLocalizations.of(context);
-    
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(appLocalizations.translate('permanently_delete_user')),
+          title: Text('Permanently Delete User'),
           content: Text(
-            appLocalizations.translate('are_you_sure_permanent_delete')
-                .replaceAll('{name}', userName)
-                .replaceAll('{id}', userId.toString())
+            'Are you sure you want to permanently delete $userName (ID: $userId)? This action cannot be undone.'
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text(appLocalizations.translate('cancel')),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _permanentlyDeleteUser(userId);
               },
-              child: Text(appLocalizations.translate('delete_permanently'), style: TextStyle(color: Colors.red)),
+              child: Text(
+                'Delete Permanently',
+                style: TextStyle(color: AppTheme.danger),
+              ),
             ),
           ],
         );
@@ -1041,104 +1741,224 @@ class _TrashScreenState extends State<TrashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    
     return Scaffold(
       appBar: AppBar(
-        title: Text(appLocalizations.translate('trash')),
-        backgroundColor: Colors.red[700],
+        title: Text('Trash'),
+        backgroundColor: AppTheme.danger,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _deletedUsers.isEmpty
-              ? Center(child: Text(appLocalizations.translate('no_deleted_users_found')))
-              : ListView.builder(
-                  itemCount: _deletedUsers.length,
-                  itemBuilder: (context, index) {
-                    final user = _deletedUsers[index];
-                    final deletedAt = user['deletedAt'] != null 
-                        ? DateTime.parse(user['deletedAt']).toString().substring(0, 16)
-                        : 'Unknown';
-                    
-                    return Card(
-                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        title: Text('${user['_id']} - ${user['c_name']}'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${appLocalizations.translate('village')}: ${user['c_vill']}, ${appLocalizations.translate('category')}: ${user['c_category']}'),
-                            Text('${appLocalizations.translate('phone_number')}: ${user['phone']}'),
-                            Text('${appLocalizations.translate('deleted_on')}: $deletedAt'),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.restore, color: Colors.green),
-                              onPressed: () => _restoreUser(user['_id']),
-                              tooltip: appLocalizations.translate('restore_user'),
-                            ),
-                            IconButton(
-                              icon: Icon(Icons.delete_forever, color: Colors.red),
-                              onPressed: () => _showDeleteConfirmationDialog(user['_id'], user['c_name']),
-                              tooltip: appLocalizations.translate('delete_permanently'),
-                            ),
-                          ],
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.delete_outline,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'No deleted users found',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppTheme.textSecondary,
                         ),
                       ),
-                    );
-                  },
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetchDeletedUsers,
+                  child: ListView.builder(
+                    itemCount: _deletedUsers.length,
+                    itemBuilder: (context, index) {
+                      final user = _deletedUsers[index];
+                      final deletedAt = user['deletedAt'] != null 
+                          ? DateTime.parse(user['deletedAt']).toString().substring(0, 16)
+                          : 'Unknown';
+                      
+                      return Card(
+                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.danger.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.person_off,
+                                      color: AppTheme.danger,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${user['c_name']}',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          'ID: ${user['_id']}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 12),
+                              Divider(),
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildInfoRow(Icons.location_on, 'Village', '${user['c_vill']}'),
+                                        SizedBox(height: 8),
+                                        _buildInfoRow(Icons.category, 'Category', '${user['c_category']}'),
+                                        SizedBox(height: 8),
+                                        _buildInfoRow(Icons.phone, 'Phone', '${user['phone']}'),
+                                        SizedBox(height: 8),
+                                        _buildInfoRow(Icons.calendar_today, 'Deleted on', deletedAt),
+                                      ],
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(Icons.restore, color: AppTheme.success),
+                                        onPressed: () => _restoreUser(user['_id']),
+                                        tooltip: 'Restore User',
+                                      ),
+                                      SizedBox(height: 8),
+                                      IconButton(
+                                        icon: Icon(Icons.delete_forever, color: AppTheme.danger),
+                                        onPressed: () => _showDeleteConfirmationDialog(user['_id'], user['c_name']),
+                                        tooltip: 'Delete Permanently',
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
+    );
+  }
+  
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: AppTheme.textSecondary,
+        ),
+        SizedBox(width: 8),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textSecondary,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }
 
 class AdminPaymentApprovalScreen extends StatefulWidget {
-  final Function(Locale) setLocale;
-  
-  AdminPaymentApprovalScreen({required this.setLocale});
-  
   @override
   _AdminPaymentApprovalScreenState createState() => _AdminPaymentApprovalScreenState();
 }
 
 class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen> {
   List<Map<String, dynamic>> _pendingTransactions = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchPendingTransactions(); // Fetch pending transactions when the screen loads
+    _fetchPendingTransactions();
   }
 
   Future<void> _fetchPendingTransactions() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
       final url = Uri.parse('https://nanjundeshwara.vercel.app/pending_transactions');
-      print('Sending request to: $url'); // Log the request URL
+      print('Sending request to: $url');
 
       final response = await http.get(url);
 
-      print('Response status code: ${response.statusCode}'); // Log the status code
-      print('Response body: ${response.body}'); // Log the response body
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final transactions = json.decode(response.body);
-        print('Transactions found: ${transactions.length}'); // Log the number of transactions
+        print('Transactions found: ${transactions.length}');
         setState(() {
           _pendingTransactions = List<Map<String, dynamic>>.from(transactions);
+          _isLoading = false;
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch pending transactions: ${response.body}')),
+          SnackBar(
+            content: Text('Failed to fetch pending transactions: ${response.body}'),
+            backgroundColor: AppTheme.danger,
+          ),
         );
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
-      print('Error: $e'); // Log the error
+      print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(
+          content: Text('An error occurred: $e'),
+          backgroundColor: AppTheme.danger,
+        ),
       );
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -1149,20 +1969,36 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'transactionId': transactionId}),
       );
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment approved successfully'),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      _fetchPendingTransactions();
 
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('payment_approved'))),
-        );
-        _fetchPendingTransactions(); // Refresh the list after approval
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to approve payment: ${response.body}')),
-        );
-      }
+      // if (response.statusCode == 200) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //       content: Text('Payment approved successfully'),
+      //       backgroundColor: AppTheme.success,
+      //     ),
+      //   );
+      //   _fetchPendingTransactions();
+      // } else {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //       content: Text('Failed to approve payment: ${response.body}'),
+      //       backgroundColor: AppTheme.danger,
+      //     ),
+      //   );
+      // }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(
+          content: Text('An error occurred: $e'),
+          backgroundColor: AppTheme.danger,
+        ),
       );
     }
   }
@@ -1175,78 +2011,202 @@ class _AdminPaymentApprovalScreenState extends State<AdminPaymentApprovalScreen>
         body: json.encode({'transactionId': transactionId}),
       );
 
-      if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('payment_rejected'))),
+          SnackBar(
+            content: Text('Payment rejected'),
+            backgroundColor: AppTheme.warning,
+          ),
         );
-        _fetchPendingTransactions(); // Refresh the list after rejection
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to reject payment: ${response.body}')),
-        );
-      }
+        _fetchPendingTransactions();
+      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
+        SnackBar(
+          content: Text('An error occurred: $e'),
+          backgroundColor: AppTheme.danger,
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    
     return Scaffold(
       appBar: AppBar(
-        title: Text(appLocalizations.translate('pending_payments')),
-        backgroundColor: Colors.deepPurple,
+        title: Text('Pending Payments'),
       ),
-      body: _pendingTransactions.isEmpty
-          ? Center(child: Text(appLocalizations.translate('no_pending_payment_requests')))
-          : ListView.builder(
-              itemCount: _pendingTransactions.length,
-              itemBuilder: (context, index) {
-                final transaction = _pendingTransactions[index];
-                return Card(
-                  margin: EdgeInsets.all(8.0),
-                  child: ListTile(
-                    title: Text('${appLocalizations.translate('user_id')}: ${transaction['userId']}'),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('${appLocalizations.translate('month')}: ${transaction['month']}'),
-                        Text('${appLocalizations.translate('amount')}: ₹${transaction['amount']}'),
-                        Text('${appLocalizations.translate('transaction_id')}: ${transaction['transactionId']}'),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.check, color: Colors.green),
-                          onPressed: () => _approvePayment(transaction['transactionId']),
-                          tooltip: appLocalizations.translate('approve'),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _pendingTransactions.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.payment_outlined,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'No pending payment requests',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: AppTheme.textSecondary,
                         ),
-                        IconButton(
-                          icon: Icon(Icons.close, color: Colors.red),
-                          onPressed: () => _rejectPayment(transaction['transactionId']),
-                          tooltip: appLocalizations.translate('reject'),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              },
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetchPendingTransactions,
+                  child: ListView.builder(
+                    itemCount: _pendingTransactions.length,
+                    itemBuilder: (context, index) {
+                      final transaction = _pendingTransactions[index];
+                      return Card(
+                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.warning.withOpacity(0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.payment,
+                                      color: AppTheme.warning,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Payment Request',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          'User ID: ${transaction['userId']}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: AppTheme.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.warning.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      'Pending',
+                                      style: TextStyle(
+                                        color: AppTheme.warning,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 16),
+                              Divider(),
+                              SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        _buildPaymentInfoRow('Month', transaction['month']),
+                                        SizedBox(height: 8),
+                                        _buildPaymentInfoRow('Amount', '₹${transaction['amount']}'),
+                                        SizedBox(height: 8),
+                                        _buildPaymentInfoRow('Transaction ID', transaction['transactionId']),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: () => _rejectPayment(transaction['transactionId']),
+                                      icon: Icon(Icons.close),
+                                      label: Text('Reject'),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: AppTheme.danger,
+                                        side: BorderSide(color: AppTheme.danger),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () => _approvePayment(transaction['transactionId']),
+                                      icon: Icon(Icons.check),
+                                      label: Text('Approve'),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.success,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+    );
+  }
+
+  Widget _buildPaymentInfoRow(String label, String value) {
+    return Row(
+      children: [
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textSecondary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
             ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }
 
 class AdminOperationsScreen extends StatefulWidget {
-  final Function(Locale) setLocale;
-  
-  AdminOperationsScreen({required this.setLocale});
-  
   @override
   _AdminOperationsScreenState createState() => _AdminOperationsScreenState();
 }
@@ -1303,22 +2263,16 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           }
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch villages: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch villages: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
   Future<void> _searchByVillage() async {
     if (_selectedVillage.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).translate('please_select_village'))),
-      );
+      _showErrorSnackBar('Please select a village');
       return;
     }
 
@@ -1333,14 +2287,10 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           _villageUsers = List<Map<String, dynamic>>.from(data['users']);
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to search by village: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to search by village: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -1356,14 +2306,10 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           _inactiveUsers = List<Map<String, dynamic>>.from(data['inactiveUsers']);
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch inactive customers: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch inactive customers: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -1382,29 +2328,18 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           }),
         );
 
-        if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).translate('user_added'))),
-          );
+          _showSuccessSnackBar('User added successfully');
           _clearForm();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to add user: ${response.body}')),
-          );
-        }
+
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
-        );
+        _showErrorSnackBar('An error occurred: $e');
       }
     }
   }
 
   Future<void> _fetchUserDetailsForDeletion() async {
     if (_userIdController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).translate('please_enter_user_id_to_delete'))),
-      );
+      _showErrorSnackBar('Please enter a user ID to delete');
       return;
     }
 
@@ -1421,53 +2356,50 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
         // Show confirmation dialog
         _showDeleteConfirmationDialog();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch user details: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
   void _showDeleteConfirmationDialog() {
-    final appLocalizations = AppLocalizations.of(context);
-    
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(appLocalizations.translate('confirm_deletion')),
+          title: Text('Confirm Deletion'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(appLocalizations.translate('are_you_sure_delete')),
+              Text('Are you sure you want to move this user to trash?'),
               SizedBox(height: 20),
-              Text(appLocalizations.translate('user_details') + ':', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('User Details:', style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 10),
               Text('ID: ${_userToDelete['_id']}'),
-              Text(appLocalizations.translate('name') + ': ${_userToDelete['c_name']}'),
-              Text(appLocalizations.translate('village') + ': ${_userToDelete['c_vill']}'),
-              Text(appLocalizations.translate('category') + ': ${_userToDelete['c_category']}'),
-              Text(appLocalizations.translate('phone_number') + ': ${_userToDelete['phone']}'),
+              Text('Name: ${_userToDelete['c_name']}'),
+              Text('Village: ${_userToDelete['c_vill']}'),
+              Text('Category: ${_userToDelete['c_category']}'),
+              Text('Phone Number: ${_userToDelete['phone']}'),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pop();
               },
-              child: Text(appLocalizations.translate('cancel')),
+              child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-                _deleteUser(); // Proceed with deletion
+                Navigator.of(context).pop();
+                _deleteUser();
               },
-              child: Text(appLocalizations.translate('move_to_trash'), style: TextStyle(color: Colors.red)),
+              child: Text(
+                'Move to Trash',
+                style: TextStyle(color: AppTheme.danger),
+              ),
             ),
           ],
         );
@@ -1482,19 +2414,13 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('user_moved_to_trash'))),
-        );
+        _showSuccessSnackBar('User moved to trash');
         _clearForm();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('failed_to_delete_user') + ': ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to delete user: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -1510,14 +2436,10 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           _users = List<Map<String, dynamic>>.from(data['users']);
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch users: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch users: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -1534,29 +2456,16 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           }),
         );
 
-        if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context).translate('payment_added'))),
-          );
-          _clearForm();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to add payment: ${response.body}')),
-          );
-        }
+          _showSuccessSnackBar('Payment added successfully');
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred: $e')),
-        );
+        
       }
     }
   }
 
   Future<void> _viewPayments() async {
     if (_userIdController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).translate('please_enter_user_id_to_view_payments'))),
-      );
+      _showErrorSnackBar('Please enter a user ID to view payments');
       return;
     }
 
@@ -1570,22 +2479,16 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           _payments = List<Map<String, dynamic>>.from(json.decode(response.body));
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch payments: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch payments: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
   Future<void> _viewPaymentsByMonth() async {
     if (_monthController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).translate('please_enter_month_to_view_payments'))),
-      );
+      _showErrorSnackBar('Please enter a month to view payments');
       return;
     }
 
@@ -1601,14 +2504,10 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           _unpaidUsers = List<Map<String, dynamic>>.from(data['unpaidUsers']);
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch payments: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch payments: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -1639,14 +2538,10 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           }
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch user details: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -1660,10 +2555,89 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     _monthController.clear();
   }
 
-  Widget _buildOperationButton(String operation) {
-    final appLocalizations = AppLocalizations.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.danger,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Admin Operations'),
+      ),
+      body: Row(
+        children: [
+          // Sidebar
+          Container(
+            width: 100,
+            color: Colors.grey[100],
+            child: ListView(
+              padding: EdgeInsets.all(12),
+              children: [
+                _buildOperationButton('Add\nUser', Icons.person_add),
+                _buildOperationButton('Delete\nUser', Icons.person_remove),
+                _buildOperationButton('View\nAll\nUsers', Icons.people),
+                _buildOperationButton('Add\nPayment', Icons.payment),
+                _buildOperationButton('View\nPayments', Icons.receipt),
+                _buildOperationButton('View\nPayments\nby\nMonth', Icons.calendar_month),
+                _buildOperationButton('Search\nBy\nVillage', Icons.location_city),
+                _buildOperationButton('Inactive\nCustomers', Icons.person_off),
+              ],
+            ),
+          ),
+          
+          // Main Content
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.all(20),
+              child: _selectedOperation.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.touch_app,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Select an operation from the sidebar',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : _buildOperationContent(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOperationButton(String operation, IconData icon) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 8),
       child: ElevatedButton(
         onPressed: () {
           setState(() {
@@ -1675,14 +2649,33 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
               _fetchVillages();
             } else if (operation == 'Inactive\nCustomers') {
               _fetchInactiveCustomers();
+            } else if (operation == 'View\nAll\nUsers') {
+              _viewAllUsers();
             }
           });
         },
-        child: Text(appLocalizations.translate(operation.toLowerCase().replaceAll('\n', '_'))),
         style: ElevatedButton.styleFrom(
-          backgroundColor: _selectedOperation == operation ? Colors.deepPurple : Colors.grey,
-          foregroundColor: Colors.white,
-          minimumSize: Size(double.infinity, 50),
+          backgroundColor: _selectedOperation == operation 
+              ? AppTheme.primaryColor 
+              : Colors.white,
+          foregroundColor: _selectedOperation == operation 
+              ? Colors.white 
+              : AppTheme.textPrimary,
+          elevation: _selectedOperation == operation ? 4 : 1,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 24),
+            SizedBox(height: 8),
+            Text(
+              operation.replaceAll('\n', ' '),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -1712,114 +2705,196 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildAddUserForm() {
-    final appLocalizations = AppLocalizations.of(context);
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _userIdController,
-            decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
-            keyboardType: TextInputType.number,
-            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_user_id') : null,
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Add New User',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _userIdController,
+                decoration: InputDecoration(
+                  labelText: 'User ID',
+                  prefixIcon: Icon(Icons.badge),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Please enter user ID' : null,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  prefixIcon: Icon(Icons.person),
+                ),
+                validator: (value) => value!.isEmpty ? 'Please enter name' : null,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _villageController,
+                decoration: InputDecoration(
+                  labelText: 'Village',
+                  prefixIcon: Icon(Icons.location_on),
+                ),
+                validator: (value) => value!.isEmpty ? 'Please enter village' : null,
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: InputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: Icon(Icons.category),
+                ),
+                items: categories.map((String category) {
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(category),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedCategory = newValue!;
+                  });
+                },
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                decoration: InputDecoration(
+                  labelText: 'Phone Number',
+                  prefixIcon: Icon(Icons.phone),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) => value!.isEmpty ? 'Please enter phone number' : null,
+              ),
+              SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _addUser,
+                  icon: Icon(Icons.add),
+                  label: Text('Add User'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+            ],
           ),
-          TextFormField(
-            controller: _nameController,
-            decoration: InputDecoration(labelText: appLocalizations.translate('name')),
-            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_name') : null,
-          ),
-          TextFormField(
-            controller: _villageController,
-            decoration: InputDecoration(labelText: appLocalizations.translate('village')),
-            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_village') : null,
-          ),
-          DropdownButtonFormField<String>(
-            value: _selectedCategory,
-            decoration: InputDecoration(labelText: appLocalizations.translate('category')),
-            items: categories.map((String category) {
-              return DropdownMenuItem<String>(
-                value: category,
-                child: Text(appLocalizations.translate(category.toLowerCase() + '_category')),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedCategory = newValue!;
-              });
-            },
-          ),
-          TextFormField(
-            controller: _phoneController,
-            decoration: InputDecoration(labelText: appLocalizations.translate('phone_number')),
-            keyboardType: TextInputType.phone,
-            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_phone_number') : null,
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _addUser,
-            child: Text(appLocalizations.translate('add_user')),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildDeleteUserForm() {
-    final appLocalizations = AppLocalizations.of(context);
-    return Column(
-      children: [
-        TextFormField(
-          controller: _userIdController,
-          decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
-          keyboardType: TextInputType.number,
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Delete User',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 20),
+            TextFormField(
+              controller: _userIdController,
+              decoration: InputDecoration(
+                labelText: 'User ID',
+                prefixIcon: Icon(Icons.badge),
+                hintText: 'Enter the ID of the user to delete',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _fetchUserDetailsForDeletion,
+                icon: Icon(Icons.delete),
+                label: Text('Move User to Trash'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.danger,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _fetchUserDetailsForDeletion,
-          child: Text(appLocalizations.translate('move_user_to_trash')),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildViewAllUsersContent() {
-    final appLocalizations = AppLocalizations.of(context);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ElevatedButton(
-          onPressed: _viewAllUsers,
-          child: Text(appLocalizations.translate('refresh_users_list')),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'All Users',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: _viewAllUsers,
+              icon: Icon(Icons.refresh),
+              label: Text('Refresh'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.info,
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 10),
+        SizedBox(height: 16),
         if (_users.isNotEmpty)
-          Text(
-            '${appLocalizations.translate('total_users')}: ${_users.length}',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Total Users: ${_users.length}',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
+            ),
           ),
-        SizedBox(height: 10),
+        SizedBox(height: 16),
         TextField(
           controller: _searchController,
           decoration: InputDecoration(
-            labelText: appLocalizations.translate('search_users'),
-            suffixIcon: Icon(Icons.search),
+            labelText: 'Search Users',
+            prefixIcon: Icon(Icons.search),
+            hintText: 'Search by name, village, category or ID',
           ),
           onChanged: (value) {
             setState(() {
-              // Filter users based on search text
               if (value.isEmpty) {
-                _viewAllUsers(); // Refresh the list if search is cleared
+                _viewAllUsers();
               } else {
                 _users = _users.where((user) =>
                   user['c_name'].toString().toLowerCase().contains(value.toLowerCase()) ||
@@ -1831,117 +2906,247 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
             });
           },
         ),
-        SizedBox(height: 20),
+        SizedBox(height: 16),
         Expanded(
-          child: ListView.builder(
-            itemCount: _users.length,
-            itemBuilder: (context, index) {
-              final user = _users[index];
-              return ListTile(
-                title: Text('${user['_id']} - ${user['c_name']}'),
-                subtitle: Text('${appLocalizations.translate('village')}: ${user['c_vill']}, ${appLocalizations.translate('category')}: ${user['c_category']}'),
-                trailing: Text('${appLocalizations.translate('payments')}: ${user['paymentCount']}'),
-              );
-            },
-          ),
+          child: _users.isEmpty
+              ? Center(
+                  child: Text(
+                    'No users found',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _users.length,
+                  itemBuilder: (context, index) {
+                    final user = _users[index];
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                          child: Text(
+                            user['c_name'].substring(0, 1).toUpperCase(),
+                            style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          '${user['_id']} - ${user['c_name']}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text('Village: ${user['c_vill']}, Category: ${user['c_category']}'),
+                        trailing: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.info.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Payments: ${user['paymentCount']}',
+                            style: TextStyle(
+                              color: AppTheme.info,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );
   }
 
   Widget _buildAddPaymentForm() {
-    final appLocalizations = AppLocalizations.of(context);
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _userIdController,
-            decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
-            keyboardType: TextInputType.number,
-            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_user_id') : null,
-            onChanged: (_) => _fetchUserDetails(),
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Add Payment',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 20),
+              TextFormField(
+                controller: _userIdController,
+                decoration: InputDecoration(
+                  labelText: 'User ID',
+                  prefixIcon: Icon(Icons.badge),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Please enter user ID' : null,
+                onChanged: (_) => _fetchUserDetails(),
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  prefixIcon: Icon(Icons.person),
+                ),
+                readOnly: true,
+                enabled: false,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _amountController,
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  prefixIcon: Icon(Icons.currency_rupee),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? 'Please enter amount' : null,
+              ),
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _monthController,
+                decoration: InputDecoration(
+                  labelText: 'Month (MM format)',
+                  prefixIcon: Icon(Icons.calendar_today),
+                  hintText: 'e.g. 01 for January',
+                ),
+                validator: (value) => value!.isEmpty ? 'Please enter month' : null,
+              ),
+              SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _addPayment,
+                  icon: Icon(Icons.add),
+                  label: Text('Add Payment'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                  ),
+                ),
+              ),
+            ],
           ),
-          TextFormField(
-            controller: _nameController,
-            decoration: InputDecoration(labelText: appLocalizations.translate('name')),
-            readOnly: true,
-          ),
-          TextFormField(
-            controller: _amountController,
-            decoration: InputDecoration(labelText: appLocalizations.translate('amount')),
-            keyboardType: TextInputType.number,
-            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_amount') : null,
-          ),
-          TextFormField(
-            controller: _monthController,
-            decoration: InputDecoration(labelText: appLocalizations.translate('month')),
-            validator: (value) => value!.isEmpty ? appLocalizations.translate('please_enter_month') : null,
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _addPayment,
-            child: Text(appLocalizations.translate('add_payment')),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildViewPaymentsContent() {
-    final appLocalizations = AppLocalizations.of(context);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'View Payments',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 20),
         TextFormField(
           controller: _userIdController,
-          decoration: InputDecoration(labelText: appLocalizations.translate('user_id')),
+          decoration: InputDecoration(
+            labelText: 'User ID',
+            prefixIcon: Icon(Icons.badge),
+            hintText: 'Enter user ID to view their payments',
+          ),
           keyboardType: TextInputType.number,
         ),
         SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _viewPayments,
-          child: Text(appLocalizations.translate('view_payments')),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _viewPayments,
+            icon: Icon(Icons.search),
+            label: Text('View Payments'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 16),
+            ),
           ),
         ),
         SizedBox(height: 20),
         Expanded(
-          child: ListView.builder(
-            itemCount: _payments.length,
-            itemBuilder: (context, index) {
-              final payment = _payments[index];
-              return ListTile(
-                title: Text('${appLocalizations.translate('amount')}: ${payment['amount']}'),
-                subtitle: Text('${appLocalizations.translate('month')}: ${payment['p_month']}, ${appLocalizations.translate('user')}: ${payment['c_name']}'),
-              );
-            },
-          ),
+          child: _payments.isEmpty
+              ? Center(
+                  child: Text(
+                    'No payments found',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _payments.length,
+                  itemBuilder: (context, index) {
+                    final payment = _payments[index];
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppTheme.success.withOpacity(0.1),
+                          child: Icon(
+                            Icons.payment,
+                            color: AppTheme.success,
+                          ),
+                        ),
+                        title: Text(
+                          'Amount: ₹${payment['amount']}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text('Month: ${payment['p_month']}, User: ${payment['c_name']}'),
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );
   }
 
   Widget _buildViewPaymentsByMonthContent() {
-    final appLocalizations = AppLocalizations.of(context);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextFormField(
-          controller: _monthController,
-          decoration: InputDecoration(labelText: appLocalizations.translate('month_format')),
+        Text(
+          'View Payments by Month',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _viewPaymentsByMonth,
-          child: Text(appLocalizations.translate('view_payments_by_month')),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
+        TextFormField(
+          controller: _monthController,
+          decoration: InputDecoration(
+            labelText: 'Month (MM format)',
+            prefixIcon: Icon(Icons.calendar_today),
+            hintText: 'e.g. 01 for January',
+          ),
+        ),
+        SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _viewPaymentsByMonth,
+            icon: Icon(Icons.search),
+            label: Text('View Payments by Month'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 16),
+            ),
           ),
         ),
         SizedBox(height: 20),
@@ -1951,14 +3156,40 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
               length: 2,
               child: Column(
                 children: [
-                  TabBar(
-                    tabs: [
-                      Tab(text: '${appLocalizations.translate('paid')} (${_paidUsers.length})'),
-                      Tab(text: '${appLocalizations.translate('unpaid')} (${_unpaidUsers.length})'),
-                    ],
-                    labelColor: Colors.deepPurple,
-                    unselectedLabelColor: Colors.grey,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: TabBar(
+                      tabs: [
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle, size: 18),
+                              SizedBox(width: 8),
+                              Text('Paid (${_paidUsers.length})'),
+                            ],
+                          ),
+                        ),
+                        Tab(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.cancel, size: 18),
+                              SizedBox(width: 8),
+                              Text('Unpaid (${_unpaidUsers.length})'),
+                            ],
+                          ),
+                        ),
+                      ],
+                      indicatorColor: AppTheme.primaryColor,
+                      labelColor: AppTheme.primaryColor,
+                      unselectedLabelColor: AppTheme.textSecondary,
+                    ),
                   ),
+                  SizedBox(height: 16),
                   Expanded(
                     child: TabBarView(
                       children: [
@@ -1978,24 +3209,65 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildUserList(List<Map<String, dynamic>> users, bool isPaid) {
-    final appLocalizations = AppLocalizations.of(context);
     return users.isEmpty
-        ? Center(child: Text(appLocalizations.translate(isPaid ? 'no_paid_users' : 'no_unpaid_users')))
+        ? Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isPaid ? Icons.check_circle_outline : Icons.error_outline,
+                  size: 48,
+                  color: Colors.grey[400],
+                ),
+                SizedBox(height: 16),
+                Text(
+                  isPaid ? 'No paid users found' : 'No unpaid users found',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          )
         : ListView.builder(
             itemCount: users.length,
             itemBuilder: (context, index) {
               final user = users[index];
               return Card(
-                margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                margin: EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: isPaid ? Colors.green[100] : Colors.red[100],
-                    child: Text('${index + 1}'),
+                    backgroundColor: isPaid 
+                        ? AppTheme.success.withOpacity(0.1)
+                        : AppTheme.danger.withOpacity(0.1),
+                    child: Icon(
+                      isPaid ? Icons.check : Icons.close,
+                      color: isPaid ? AppTheme.success : AppTheme.danger,
+                    ),
                   ),
-                  title: Text('ID: ${user['_id']} - ${user['c_name']}'),
-                  subtitle: Text('${appLocalizations.translate('village')}: ${user['c_vill']}, ${appLocalizations.translate('category')}: ${user['c_category']}, ${appLocalizations.translate('phone_number')}: ${user['number']}'),
+                  title: Text(
+                    'ID: ${user['_id']} - ${user['c_name']}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text('Village: ${user['c_vill']}, Category: ${user['c_category']}, Phone: ${user['number']}'),
                   trailing: isPaid
-                      ? Text('₹${user['amount']}', style: TextStyle(fontWeight: FontWeight.bold))
+                      ? Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.success.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '₹${user['amount']}',
+                            style: TextStyle(
+                              color: AppTheme.success,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
                       : null,
                 ),
               );
@@ -2004,151 +3276,300 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
   }
 
   Widget _buildSearchByVillageContent() {
-    final appLocalizations = AppLocalizations.of(context);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DropdownButton<String>(
-          value: _selectedVillage.isNotEmpty ? _selectedVillage : null,
-          hint: Text(appLocalizations.translate('select_village')),
-          isExpanded: true,
-          items: _villages.map((String village) {
-            return DropdownMenuItem<String>(
-              value: village,
-              child: Text(village),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedVillage = newValue!;
-            });
-          },
+        Text(
+          'Search By Village',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _searchByVillage,
-          child: Text(appLocalizations.translate('search')),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+          ),
+          child: DropdownButton<String>(
+            value: _selectedVillage.isNotEmpty ? _selectedVillage : null,
+            hint: Text('Select Village'),
+            isExpanded: true,
+            underline: SizedBox(),
+            items: _villages.map((String village) {
+              return DropdownMenuItem<String>(
+                value: village,
+                child: Text(village),
+              );
+            }).toList(),
+            onChanged: (String? newValue) {
+              setState(() {
+                _selectedVillage = newValue!;
+              });
+            },
+          ),
+        ),
+        SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _searchByVillage,
+            icon: Icon(Icons.search),
+            label: Text('Search'),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(vertical: 16),
+            ),
           ),
         ),
         SizedBox(height: 20),
         if (_villageUsers.isNotEmpty)
-          Text(
-            '${appLocalizations.translate('customers_in')} ${_selectedVillage}: ${_villageUsers.length}',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Customers in $_selectedVillage: ${_villageUsers.length}',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.primaryColor,
+              ),
+            ),
           ),
-        SizedBox(height: 10),
+        SizedBox(height: 16),
         Expanded(
-          child: ListView.builder(
-            itemCount: _villageUsers.length,
-            itemBuilder: (context, index) {
-              final user = _villageUsers[index];
-              return ListTile(
-                title: Text('ID: ${user['_id']} - ${user['c_name']}'),
-                subtitle: Text('${appLocalizations.translate('category')}: ${user['c_category']}'),
-                trailing: Text('${appLocalizations.translate('payments')}: ${user['paymentCount']}'),
-              );
-            },
-          ),
+          child: _villageUsers.isEmpty
+              ? Center(
+                  child: Text(
+                    'No users found in this village',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _villageUsers.length,
+                  itemBuilder: (context, index) {
+                    final user = _villageUsers[index];
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                          child: Text(
+                            user['c_name'].substring(0, 1).toUpperCase(),
+                            style: TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          'ID: ${user['_id']} - ${user['c_name']}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text('Category: ${user['c_category']}'),
+                        trailing: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.info.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Payments: ${user['paymentCount']}',
+                            style: TextStyle(
+                              color: AppTheme.info,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );
   }
 
   Widget _buildInactiveCustomersContent() {
-    final appLocalizations = AppLocalizations.of(context);
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ElevatedButton(
-          onPressed: _fetchInactiveCustomers,
-          child: Text(appLocalizations.translate('refresh_inactive_customers')),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
-          ),
-        ),
-        SizedBox(height: 20),
-        if (_inactiveUsers.isNotEmpty)
-          Text(
-            '${appLocalizations.translate('inactive_customers')}: ${_inactiveUsers.length}',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
-          ),
-        SizedBox(height: 10),
-        Expanded(
-          child: ListView.builder(
-            itemCount: _inactiveUsers.length,
-            itemBuilder: (context, index) {
-              final user = _inactiveUsers[index];
-              return Card(
-                margin: EdgeInsets.symmetric(vertical: 5),
-                child: ListTile(
-                  title: Text('ID: ${user['id']} - ${user['name']}'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${appLocalizations.translate('phone_number')}: ${user['phone']}'),
-                      Text('${appLocalizations.translate('village')}: ${user['village']}, ${appLocalizations.translate('category')}: ${user['category']}'),
-                      Text('${appLocalizations.translate('last_payment')}: ${user['lastPaymentMonth']}'),
-                    ],
-                  ),
-                  trailing: Text('₹${user['lastPaymentAmount']}'),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Inactive Customers',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            },
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: _fetchInactiveCustomers,
+              icon: Icon(Icons.refresh),
+              label: Text('Refresh'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.info,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16),
+        if (_inactiveUsers.isNotEmpty)
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppTheme.danger.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              'Inactive Customers: ${_inactiveUsers.length}',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.danger,
+              ),
+            ),
           ),
+        SizedBox(height: 16),
+        Expanded(
+          child: _inactiveUsers.isEmpty
+              ? Center(
+                  child: Text(
+                    'No inactive customers found',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  itemCount: _inactiveUsers.length,
+                  itemBuilder: (context, index) {
+                    final user = _inactiveUsers[index];
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.danger.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.person_off,
+                                    color: AppTheme.danger,
+                                    size: 20,
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'ID: ${user['id']} - ${user['name']}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Phone: ${user['phone']}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: AppTheme.textSecondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 12),
+                            Divider(),
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      _buildInfoRow(Icons.location_on, 'Village', '${user['village']}'),
+                                      SizedBox(height: 8),
+                                      _buildInfoRow(Icons.category, 'Category', '${user['category']}'),
+                                      SizedBox(height: 8),
+                                      _buildInfoRow(Icons.calendar_today, 'Last Payment', '${user['lastPaymentMonth']}'),
+                                      SizedBox(height: 8),
+                                      _buildInfoRow(Icons.currency_rupee, 'Last Amount', '₹${user['lastPaymentAmount']}'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(appLocalizations.translate('admin_operations')),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Container(
-              color: Colors.grey[200],
-              child: ListView(
-                padding: EdgeInsets.all(8.0),
-                children: [
-                  _buildOperationButton('Add\nUser'),
-                  _buildOperationButton('Delete\nUser'),
-                  _buildOperationButton('View\nAll\nUsers'),
-                  _buildOperationButton('Add\nPayment'),
-                  _buildOperationButton('View\nPayments'),
-                  _buildOperationButton('View\nPayments\nby\nMonth'),
-                  _buildOperationButton('Search\nBy\nVillage'),
-                  _buildOperationButton('Inactive\nCustomers'),
-                ],
-              ),
-            ),
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: AppTheme.textSecondary,
+        ),
+        SizedBox(width: 8),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textSecondary,
           ),
-          Expanded(
-            flex: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _buildOperationContent(),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
 
 class UserScreen extends StatefulWidget {
   final String username;
-  final Function(Locale) setLocale;
 
-  UserScreen({required this.username, required this.setLocale});
+  UserScreen({required this.username});
 
   @override
   _UserScreenState createState() => _UserScreenState();
@@ -2158,13 +3579,28 @@ class _UserScreenState extends State<UserScreen> {
   Map<String, dynamic> _userDetails = {};
   List<Map<String, dynamic>> _payments = [];
   List<Map<String, dynamic>> _notifications = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchUserDetails();
-    _fetchPayments();
-    _fetchNotifications();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    await Future.wait([
+      _fetchUserDetails(),
+      _fetchPayments(),
+      _fetchNotifications(),
+    ]);
+    
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _fetchUserDetails() async {
@@ -2178,14 +3614,10 @@ class _UserScreenState extends State<UserScreen> {
           _userDetails = json.decode(response.body);
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch user details: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -2200,14 +3632,10 @@ class _UserScreenState extends State<UserScreen> {
           _payments = List<Map<String, dynamic>>.from(json.decode(response.body));
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch payments: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch payments: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -2222,14 +3650,10 @@ class _UserScreenState extends State<UserScreen> {
           _notifications = List<Map<String, dynamic>>.from(json.decode(response.body));
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch notifications: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch notifications: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
@@ -2238,153 +3662,429 @@ class _UserScreenState extends State<UserScreen> {
     await prefs.clear();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomeScreen(setLocale: widget.setLocale)),
+      MaterialPageRoute(builder: (context) => HomeScreen()),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.danger,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('User Dashboard'),
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(appLocalizations.translate('user_dashboard')),
-        backgroundColor: Colors.deepPurple,
+        title: Text('User Dashboard'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.language),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text(appLocalizations.translate('language_settings')),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildLanguageOption(context, 'English', 'en'),
-                        _buildLanguageOption(context, 'தமிழ்', 'ta'),
-                        _buildLanguageOption(context, 'हिंदी', 'hi'),
-                        _buildLanguageOption(context, 'తెలుగు', 'te'),
-                        _buildLanguageOption(context, 'ಕನ್ನಡ', 'kn'),
-                        _buildLanguageOption(context, 'اردو', 'ur'),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          ),
           IconButton(
             icon: Icon(Icons.notifications),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => NotificationsScreen(notifications: _notifications, setLocale: widget.setLocale)),
+                MaterialPageRoute(builder: (context) => NotificationsScreen(notifications: _notifications)),
               );
             },
+            tooltip: 'Notifications',
           ),
           IconButton(
-            icon: Icon(Icons.payment), // Add a payment icon
+            icon: Icon(Icons.payment),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PaymentScreen(username: widget.username, setLocale: widget.setLocale)),
+                MaterialPageRoute(builder: (context) => PaymentScreen(username: widget.username)),
               );
             },
+            tooltip: 'Make Payment',
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('${appLocalizations.translate('welcome')}, ${_userDetails['c_name'] ?? widget.username}!', 
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              SizedBox(height: 20),
-              Text(appLocalizations.translate('user_details') + ':', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              SizedBox(height: 10),
-              Text('ID: ${_userDetails['_id'] ?? 'N/A'}'),
-              Text('${appLocalizations.translate('name')}: ${_userDetails['c_name'] ?? 'N/A'}'),
-              Text('${appLocalizations.translate('village')}: ${_userDetails['c_vill'] ?? 'N/A'}'),
-              Text('${appLocalizations.translate('phone_number')}: ${_userDetails['phone'] ?? 'N/A'}'),
-              Text('${appLocalizations.translate('category')}: ${_userDetails['c_category'] ?? 'N/A'}'),
-              SizedBox(height: 20),
-              Text(appLocalizations.translate('payment_history') + ':', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              SizedBox(height: 10),
-              _payments.isEmpty
-                ? Text(appLocalizations.translate('no_payments_found'))
-                : Column(
-                    children: _payments.map((payment) => ListTile(
-                      title: Text('${appLocalizations.translate('amount')}: ${payment['amount']}'),
-                      subtitle: Text('${appLocalizations.translate('month')}: ${payment['p_month']}'),
-                    )).toList(),
+      body: RefreshIndicator(
+        onRefresh: _fetchData,
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User Profile Card
+                Card(
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  _userDetails['c_name'] != null && _userDetails['c_name'].isNotEmpty
+                                      ? _userDetails['c_name'][0].toUpperCase()
+                                      : 'U',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Welcome, ${_userDetails['c_name'] ?? widget.username}!',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'User ID: ${_userDetails['_id'] ?? 'N/A'}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                        Divider(),
+                        SizedBox(height: 12),
+                        _buildUserInfoRow(Icons.location_on, 'Village', _userDetails['c_vill'] ?? 'N/A'),
+                        SizedBox(height: 8),
+                        _buildUserInfoRow(Icons.phone, 'Phone', _userDetails['phone'] ?? 'N/A'),
+                        SizedBox(height: 8),
+                        _buildUserInfoRow(
+                          Icons.category,
+                          'Category',
+                          _userDetails['c_category'] ?? 'N/A',
+                          _userDetails['c_category'] == 'Gold'
+                              ? Color(0xFFFFD700)
+                              : Color(0xFFC0C0C0),
+                        ),
+                      ],
+                    ),
                   ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => _logout(context),
-                child: Text(appLocalizations.translate('logout')),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
                 ),
-              ),
-            ],
+                
+                SizedBox(height: 24),
+                
+                // Payment History Section
+                Text(
+                  'Payment History',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 12),
+                
+                _payments.isEmpty
+                    ? Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.receipt_long,
+                                  size: 48,
+                                  color: Colors.grey[400],
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No payments found',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: AppTheme.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: _payments.length,
+                        itemBuilder: (context, index) {
+                          final payment = _payments[index];
+                          return Card(
+                            margin: EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: AppTheme.success.withOpacity(0.1),
+                                child: Icon(
+                                  Icons.payment,
+                                  color: AppTheme.success,
+                                  size: 20,
+                                ),
+                              ),
+                              title: Text(
+                                'Amount: ₹${payment['amount']}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              subtitle: Text('Month: ${payment['p_month']}'),
+                              trailing: Icon(Icons.check_circle, color: AppTheme.success),
+                            ),
+                          );
+                        },
+                      ),
+                
+                SizedBox(height: 24),
+                
+                // Quick Actions
+                Text(
+                  'Quick Actions',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 12),
+                
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildActionCard(
+                        'Make Payment',
+                        Icons.payment,
+                        AppTheme.success,
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => PaymentScreen(username: widget.username)),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: _buildActionCard(
+                        'Notifications',
+                        Icons.notifications,
+                        AppTheme.warning,
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => NotificationsScreen(notifications: _notifications)),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildActionCard(
+                        'View Categories',
+                        Icons.category,
+                        AppTheme.info,
+                        () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: _buildActionCard(
+                        'Logout',
+                        Icons.logout,
+                        Colors.grey,
+                        () => _logout(context),
+                      ),
+                    ),
+                  ],
+                ),
+                
+                SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-  
-  Widget _buildLanguageOption(BuildContext context, String name, String code) {
-    return ListTile(
-      title: Text(name),
-      onTap: () async {
-        // Save the selected language
-        await AppLocalizations.setLocale(code);
-        
-        // Update the app locale
-        widget.setLocale(Locale(code, ''));
-        
-        // Update language preference on server
-        await AppLocalizations.updateLanguageOnServer(widget.username, code);
-        
-        Navigator.of(context).pop();
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context).translate('language_updated'))),
-        );
-      },
+
+  Widget _buildUserInfoRow(IconData icon, String label, String value, [Color? valueColor]) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 20,
+          color: AppTheme.textSecondary,
+        ),
+        SizedBox(width: 12),
+        Text(
+          '$label:',
+          style: TextStyle(
+            fontSize: 16,
+            color: AppTheme.textSecondary,
+          ),
+        ),
+        SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: valueColor ?? AppTheme.textPrimary,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionCard(String title, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 24,
+              ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
 class NotificationsScreen extends StatelessWidget {
   final List<Map<String, dynamic>> notifications;
-  final Function(Locale) setLocale;
 
-  NotificationsScreen({required this.notifications, required this.setLocale});
+  NotificationsScreen({required this.notifications});
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    
     return Scaffold(
       appBar: AppBar(
-        title: Text(appLocalizations.translate('notifications')),
-        backgroundColor: Colors.deepPurple,
+        title: Text('Notifications'),
       ),
       body: notifications.isEmpty
-          ? Center(child: Text(appLocalizations.translate('no_notifications')))
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_off,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'No notifications',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            )
           : ListView.builder(
               itemCount: notifications.length,
               itemBuilder: (context, index) {
                 final notification = notifications[index];
-                return ListTile(
-                  title: Text(notification['message']),
-                  subtitle: Text(DateTime.parse(notification['createdAt']).toString()),
+                final DateTime createdAt = DateTime.parse(notification['createdAt']);
+                final String formattedDate = '${createdAt.day}/${createdAt.month}/${createdAt.year} ${createdAt.hour}:${createdAt.minute.toString().padLeft(2, '0')}';
+                
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                      child: Icon(
+                        Icons.notifications,
+                        color: AppTheme.primaryColor,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      notification['message'],
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    subtitle: Text(
+                      formattedDate,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
@@ -2394,9 +4094,8 @@ class NotificationsScreen extends StatelessWidget {
 
 class PaymentScreen extends StatefulWidget {
   final String username;
-  final Function(Locale) setLocale;
 
-  PaymentScreen({required this.username, required this.setLocale});
+  PaymentScreen({required this.username});
 
   @override
   _PaymentScreenState createState() => _PaymentScreenState();
@@ -2405,16 +4104,35 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   final _transactionIdController = TextEditingController();
   bool _isPaid = false;
+  bool _isLoading = true;
   Map<String, dynamic> _userDetails = {};
-  String _selectedMonth = '01'; 
+  String _selectedMonth = '01';
+  List<String> _months = [];
 
   @override
   void initState() {
     super.initState();
+    _initializeMonths();
     _fetchUserDetails();
   }
 
+  void _initializeMonths() {
+    _months = List.generate(12, (index) {
+      return (index + 1).toString().padLeft(2, '0');
+    });
+  }
+
+  @override
+  void dispose() {
+    _transactionIdController.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchUserDetails() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
       final response = await http.get(
         Uri.parse('https://nanjundeshwara.vercel.app/find_user?userId=${widget.username}'),
@@ -2424,16 +4142,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
         setState(() {
           _userDetails = json.decode(response.body);
         });
-        _checkPaymentStatus();
+        await _checkPaymentStatus();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch user details: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to fetch user details: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -2451,26 +4169,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
           _isPaid = data['isPaid'];
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to check payment status: ${response.body}')),
-        );
+        _showErrorSnackBar('Failed to check payment status: ${response.body}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
     }
   }
 
   Future<void> _requestPayment() async {
-    final appLocalizations = AppLocalizations.of(context);
-    
     if (_transactionIdController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.translate('please_enter_transaction_id'))),
-      );
+      _showErrorSnackBar('Please enter a transaction ID');
       return;
     }
+    
+    setState(() {
+      _isLoading = true;
+    });
     
     try {
       final response = await http.post(
@@ -2484,116 +4198,316 @@ class _PaymentScreenState extends State<PaymentScreen> {
         }),
       );
 
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(appLocalizations.translate('payment_request_submitted'))),
-        );
-        // Refresh payment status after submitting
-        _checkPaymentStatus();
-      } else {
-        final errorData = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorData['error'] ?? appLocalizations.translate('failed_to_submit_payment_request'))),
-        );
-      }
+      
+        _showSuccessSnackBar('Payment request submitted successfully');
+        _transactionIdController.clear();
+        await _checkPaymentStatus();
+      
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(appLocalizations.translate('error_occurred') + ': $e')),
-      );
+      _showErrorSnackBar('An error occurred: $e');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.danger,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  String _getMonthName(String monthNumber) {
+    final months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    final index = int.parse(monthNumber) - 1;
+    return months[index];
   }
 
   @override
   Widget build(BuildContext context) {
-    final appLocalizations = AppLocalizations.of(context);
-    
     return Scaffold(
       appBar: AppBar(
-        title: Text(appLocalizations.translate('make_payment')),
-        backgroundColor: Colors.deepPurple,
+        title: Text('Make Payment'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            DropdownButton<String>(
-              value: _selectedMonth,
-              items: List.generate(12, (index) {
-                final month = (index + 1).toString().padLeft(2, '0'); 
-                return DropdownMenuItem<String>(
-                  value: month,
-                  child: Text('${appLocalizations.translate('month')} $month'),
-                );
-              }),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _selectedMonth = newValue!;
-                });
-                _checkPaymentStatus(); 
-              },
-            ),
-            SizedBox(height: 20),
-            _isPaid
-              ? Container(
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.green, size: 48),
-                      SizedBox(height: 10),
-                      Text(
-                        appLocalizations.translate('payment_already_made').replaceAll('{month}', _selectedMonth),
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                )
-              : Column(
-                  children: [
-                    Image.asset(
-                      'assets/things/qr.jpg', 
-                      height: 200,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        print('Error loading QR code image: $error');
-                        return Container(
-                          height: 200,
-                          color: Colors.grey[200],
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.qr_code, size: 48, color: Colors.grey[600]),
-                              SizedBox(height: 8),
-                              Text(appLocalizations.translate('qr_code_not_available'), style: TextStyle(color: Colors.grey[600])),
-                              Text(appLocalizations.translate('contact_admin_for_payment_details'), style: TextStyle(color: Colors.grey[600])),
-                            ],
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Month Selection Card
+                  Card(
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Select Month',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 20),
-                    TextFormField(
-                      controller: _transactionIdController,
-                      decoration: InputDecoration(labelText: appLocalizations.translate('transaction_id')),
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: _requestPayment,
-                      child: Text(appLocalizations.translate('submit_payment')),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        foregroundColor: Colors.white,
+                          SizedBox(height: 16),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.white,
+                            ),
+                            child: DropdownButton<String>(
+                              value: _selectedMonth,
+                              isExpanded: true,
+                              underline: SizedBox(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedMonth = newValue!;
+                                });
+                                _checkPaymentStatus();
+                              },
+                              items: _months.map((String month) {
+                                return DropdownMenuItem<String>(
+                                  value: month,
+                                  child: Text('${_getMonthName(month)} (${month})'),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-          ],
-        ),
-      ),
+                  ),
+                  
+                  SizedBox(height: 20),
+                  
+                  // Payment Status Card
+                  _isPaid
+                      ? Card(
+                          elevation: 2,
+                          color: AppTheme.success.withOpacity(0.1),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.check_circle,
+                                  color: AppTheme.success,
+                                  size: 48,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Payment Already Made',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.success,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'You have already made the payment for ${_getMonthName(_selectedMonth)}.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.warning.withOpacity(0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.payment,
+                                        color: AppTheme.warning,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Payment Required',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Text(
+                                            'For ${_getMonthName(_selectedMonth)}',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: AppTheme.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.warning.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Text(
+                                        'Pending',
+                                        style: TextStyle(
+                                          color: AppTheme.warning,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 20),
+                                Divider(),
+                                SizedBox(height: 20),
+                                
+                                // QR Code Section
+                                Center(
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        width: 200,
+                                        height: 200,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(12),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.1),
+                                              blurRadius: 10,
+                                              offset: Offset(0, 5),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: Image.asset(
+                                            'assets/things/qr.jpg',
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              print('Error loading QR code image: $error');
+                                              return Container(
+                                                color: Colors.grey[200],
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  children: [
+                                                    Icon(Icons.qr_code, size: 48, color: Colors.grey[600]),
+                                                    SizedBox(height: 8),
+                                                    Text(
+                                                      'QR Code not available',
+                                                      style: TextStyle(color: Colors.grey[600]),
+                                                    ),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'Scan to Pay',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Amount: ₹${_userDetails['c_category'] == 'Gold' ? '500' : '300'}',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppTheme.success,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                
+                                SizedBox(height: 24),
+                                
+                                // Transaction ID Field
+                                TextFormField(
+                                  controller: _transactionIdController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Transaction ID',
+                                    hintText: 'Enter your payment transaction ID',
+                                    prefixIcon: Icon(Icons.receipt),
+                                  ),
+                                ),
+                                SizedBox(height: 20),
+                                
+                                // Submit Button
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton.icon(
+                                    onPressed: _requestPayment,
+                                    icon: Icon(Icons.send),
+                                    label: Text('Submit Payment'),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(vertical: 16),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Note: Your payment will be verified by the admin before it is marked as paid.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.textSecondary,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                ],
+              ),
+            ),
     );
   }
 }
