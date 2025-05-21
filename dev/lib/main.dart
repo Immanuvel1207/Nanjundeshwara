@@ -2704,15 +2704,17 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
     }
   }
 
-  Widget _buildAddUserForm() {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
+Widget _buildAddUserForm() {
+  return Card(
+    elevation: 2,
+    child: Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, // Prevent unnecessary space
             children: [
               Text(
                 'Add New User',
@@ -2794,8 +2796,10 @@ class _AdminOperationsScreenState extends State<AdminOperationsScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildDeleteUserForm() {
     return Card(
