@@ -201,6 +201,42 @@ app.get("/find_user", async (req, res) => {
   }
 })
 
+
+app.post("/change_password", async (req, res) => {
+  const { userId, currentPassword, newPassword } = req.body
+
+  if (!userId || !currentPassword || !newPassword) {
+    return res.status(400).json({ error: "User ID, current password, and new password are required" })
+  }
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    if (user.isDeleted) {
+      return res.status(400).json({ error: "User account has been deleted" })
+    }
+
+    // Verify current password
+    if (user.phone !== currentPassword) {
+      return res.status(401).json({ error: "Current password is incorrect" })
+    }
+
+    // Update the password (phone field is used as password in your system)
+    user.phone = newPassword
+    await user.save()
+
+
+    res.json({ message: "Password changed successfully" })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 app.get("/find_payments", async (req, res) => {
   const userId = Number.parseInt(req.query.userIdPayments)
   const month = req.query.p_month
